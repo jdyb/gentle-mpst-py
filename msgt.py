@@ -1,5 +1,139 @@
 #!/usr/bin/env python3
 
+"""
+Notes to reader:
+    * Methods of subclasses are more likely to be documented.
+    * All methods have type annotations, even when those are redudant,
+      for simpler reading.
+"""
+
+from typing import Dict, Tuple, Set
+
+# Section 3 "Synchronous Multiparty Session Calculus", Notation 01 (Base Sets)
+
+class Label(object):
+    def __init__(self, name):
+        self.lname = name
+    def __str__(self):
+        return str(self.lname)
+
+class Participant(object):
+    """Session participant, from "Notation 01 (Base sets)" """
+    def __init__(self, name):
+        self.rname = name
+    def __str__(self):
+        return self.rname
+
+# FIXME From where are the sorts
+
+class Sort(object):
+    """Sorts and global types"""
+    pass
+
+class Nat(Sort):
+    pass
+
+class Int(Sort):
+    pass
+
+class Bool(Sort):
+    pass
+
+# The subclasses of Local are from section "4.1 Types and Projectsions" and
+# "Definition 3 (Local Session Types)"
+
+class LocalT(object):
+    """Local type."""
+    def pt(self) -> Set[Participant]:
+        raise NotImplementedError()
+
+class LEnd(LocalT):
+    """Local termination"""
+    def pt(self) -> Set[Participant]:
+        return set()
+
+class LExternalChoice(LocalT):
+    """Local Type for External Choice"""
+    def __init__(self, p, alternatives: Dict[Label, Tuple[Sort,LocalT]]):
+        self.p, self.alternatives = p, alternatives
+    def pt(self) -> Set[Participant]:
+        pts = set((self.p,))
+        for label in self.alternatives:
+            sort, ltype = self.alternatives[label]
+            pts.add(ltype.pt())
+        return pts
+
+class LInternalChoice(LocalT):
+    """Local Type for Internal Choice"""
+    def __init__(self, q, alternatives: Dict[Label, Tuple[Sort,LocalT]]):
+        self.q, self.alternatives = q, alternatives
+    def pt(self) -> Set[Participant]:
+        pts = set((self.q,))
+        for label in self.alternatives:
+            sort, ltype = self.alternatives[label]
+            pts.add(ltype.pt())
+        return pts
+
+class LVariable(LocalT):
+    def __init__(self, name: str):
+        self.ltvname = name
+    def pt(self) -> Set[Participant]:
+        return set()
+
+class LRec(LocalT):
+    def __init__(self, ltvariable: LVariable, local_type: LocalT):
+        self.ltvariable, self.local_type = ltvariable, local_type
+    def pt(self) -> Set[Participant]:
+        return self.local_type.pt()
+
+
+# The subclasses of GlobalT are from section "4.1 Types and Projections"
+# definition 2. 
+
+class GlobalT(object):
+    """Global type"""
+    def pt(self):
+        """Compute the set of participants of a global type.
+        Returns the set of participants."""
+        raise NotImplementedError()
+    def simp_projection(self, r: Participant) -> LocalT:
+        """Simple (no merging) projection. See 'Definition 4'."""
+        raise NotImplementedError()
+
+class GEnd(GlobalT):
+    """Global type signifying terminated protocol."""
+    def pt(self):
+        return set()
+    def simp_projection(self, r: Participant) -> LocalT:
+        pass
+
+class GTVar(GlobalT):
+    """Global type variable"""
+    def __init__(self, name):
+        self.gtvname = name
+    def pt(self):
+        return set()
+
+class GRec(GlobalT):
+    """Recursive global type"""
+    def __init__(self, gtvariable: GTVar, global_type: GlobalT):
+        self.gtvariable, self.global_type = gtvariable, global_type
+    def pt(self):
+        return self.global_type.pt()
+
+class GCom(GlobalT):
+    """Global type for message communication between two participants."""
+    def __init__(self, source, destination, alternatives):
+        """Alternatives is a dict, label keys."""
+        self.source, self.destination, self.alternatives = \
+                source, destination, alternatives
+    def pt(self):
+        pts = set((self.source, self.destination))
+        for label in self.alternatives:
+            Si, Gi = self.alternatives[label]
+            pts.add(Gi.pt())
+        return pts
+
 class Expression(object):
     pass
 
@@ -18,18 +152,6 @@ def eval_expr(expr, env):
         return expr
     else:
         return expr.eval(env)
-
-class Role(object):
-    def __init__(self, name):
-        self.rname = name
-    def __str__(self):
-        return self.rname
-
-class Label(object):
-    def __init__(self, name):
-        self.lname = name
-    def __str__(self):
-        return str(self.lname)
 
 class Variable(Expression):
     def __init__(self, name):
@@ -105,7 +227,7 @@ class Recv(Process):
         if self.label != label:
             # The label is not the one we are waiting on.
             raise CannotCommunicate()
-        # Role and Label matches, we will communicate (receive message).
+        # Participant and Label matches, we will communicate (receive message).
         # FIXME Eeew. Do not mutate please.
         self.continuation.environment[self.variable] = data
         return self.continuation
@@ -140,7 +262,7 @@ class ExtChoice(Process):
         # No alternative can communicate.
         raise CannotCommunicate()
 
-Bob, Alice, Carol = Role('Bob'), Role('Alice'), Role('Carol')
+Bob, Alice, Carol = Participant('Bob'), Participant('Alice'), Participant('Carol')
 l1, l2, l3, l4 = Label(1), Label(2), Label(3), Label(4)
 x = Variable('x')
 
