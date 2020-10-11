@@ -1,3 +1,16 @@
 
 "A Very Gentle Introduction to Multiparty Session Types"
 Y. Yoshida and L. Gheri
+
+http://www.cse.chalmers.se/edu/year/2015/course/DAT150/lectures/proglang-07.html
+  _judgements_
+     E => e : T
+  _environments_ E
+  _typing_rules_
+     J1  J2  ...  Jn
+     --------------- C
+           J
+  Jn are _premises_
+  J is the _conclusion_.
+  C is a _side_condition_ (or just a label)
+
