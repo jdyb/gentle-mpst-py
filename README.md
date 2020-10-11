@@ -14,6 +14,44 @@ provided in the paper.
 If you are going to study this program you should do so together with the
 paper, studying only this program will probably not be very productive. 
 
+# Current status
+
+There are still large parts of the paper that have not been implemented yet.
+
+## Work in progress:
+
+* "3 Synchronous Multiparty Session Calculus"
+
+Partial implementation of the operational semantics of multiparty sessions.
+Example 2 is implemented.
+
+* "4.1 Types and Projections"
+
+Currently working on projection and merging.
+
+## Remaining sections:
+
+* "4.2 Subtyping": Not started.
+* "4.3 Type System": Not started.
+
+## Examples:
+
+1. No reductions, so not implemented.
+2. Implemented in `example_2()`
+3. Not implemented (skipped non-merging projection).
+4. Implemented in `example_4()`
+5. Not started.
+6. Not started.
+7. Not started.
+8. Not started.
+9. Not started.
+
+## Exercises:
+
+1. Not started.
+2. Not started.
+3. Not started.
+
 # Contributing
 
 Bug reports, fixes and additional examples are most welcome! Please open an

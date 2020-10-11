@@ -489,19 +489,21 @@ class MState(object):
         return 'MState(\n{}\t)'.format(''.join(strs))
 
 
-# FIXME Wrap in function. Add reference to example.
-Bob, Alice, Carol = \
-        Participant('Bob'), Participant('Alice'), Participant('Carol')
-l1, l2, l3, l4 = Label(1), Label(2), Label(3), Label(4)
-x = Variable('x')
-PAlice = Send(Bob, l1, 50, Recv(Carol, l3, x, Inaction()))
-PBob = ExtChoice(Recv(Alice, l1, x, Send(Carol, l2, 100, Inaction())),
-        Recv(Alice, l4, x, Send(Carol, l2, 2, Inaction())))
-PCarol = Recv(Bob, l2, x, Send(Alice, l3, Succ(x), Inaction()))
-state = MState({Alice: PAlice, Bob: PBob, Carol: PCarol})
-while state:
-    print(repr(state))
-    state = state.step()
+# FIXME Wrap in function. Add reference to example 2.
+def example_2():
+    Bob, Alice, Carol = \
+            Participant('Bob'), Participant('Alice'), Participant('Carol')
+    l1, l2, l3, l4 = Label(1), Label(2), Label(3), Label(4)
+    x = Variable('x')
+    PAlice = Send(Bob, l1, 50, Recv(Carol, l3, x, Inaction()))
+    PBob = ExtChoice(Recv(Alice, l1, x, Send(Carol, l2, 100, Inaction())),
+            Recv(Alice, l4, x, Send(Carol, l2, 2, Inaction())))
+    PCarol = Recv(Bob, l2, x, Send(Alice, l3, Succ(x), Inaction()))
+    state = MState({Alice: PAlice, Bob: PBob, Carol: PCarol})
+    while state:
+        state = state.step()
+    if state.participants[Alice].environment[x] != 101:
+        raise ExampleError(example_2)
 
 def section_4_1_example_5():
     """Section 4.1 "Types and Projections", Example 5"""
