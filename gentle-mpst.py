@@ -82,6 +82,10 @@ class LEnd(LocalT):
     def pt(self) -> Set[Participant]:
         return set()
 
+    def __repr__(self):
+        return 'LEnd()'
+
+
 class LExternalChoice(LocalT):
     """External Choice / Branching Type"""
     """The ampersand-thing and exclamation-mark-thing"""
