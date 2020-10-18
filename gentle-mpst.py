@@ -152,6 +152,16 @@ class LInternalChoice(LocalT):
     def __repr__(self):
         return f'LInternalChoice({repr(self.q)}, {repr(self.alternatives)})'
 
+    def __eq__(self, other):
+        if isinstance(other, LInternalChoice):
+            return self.q == other.q and self.alternatives == other.alternatives
+        return NotImplemented
+
+    def __hash__(self):
+        # Will not bother with recursing down the entire type now, this is
+        # probably good enough to avoid most collisions.
+        return hash((self.q, frozenset(self.alternatives.keys())))
+
 class LVariable(LocalT):
 
     def __init__(self, name: str):
