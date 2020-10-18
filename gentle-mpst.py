@@ -288,6 +288,15 @@ class GRec(GlobalT):
             # Should never be reached.
             raise RuntimeError()
 
+    def __eq__(self, other):
+        if isinstance(other, GRec):
+            return self.gtvariable == other.gtvariable and \
+                    self.global_type == other.global_type
+        return NotImplemented
+
+    def __hash__(self):
+        return hash((self.gtvariable, self.global_type))
+
 class GCom(GlobalT):
     """Global type for message communication between two participants."""
 
