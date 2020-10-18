@@ -345,6 +345,11 @@ def example_4():
                 l4: (SInt(), LEnd()),
                 l5: (SNat(), LEnd())}):
         raise ExampleError((example_4, 4))
+    # Fifth line in example
+    tmp5_l = LExternalChoice(q, {l3: (SNat(), LEnd())})
+    tmp5_r = LExternalChoice(q, {l3: (SNat(), LExternalChoice(q, {l3: (SNat(), LEnd())}))})
+    if merge(tmp5_l, tmp5_r) != None:
+        raise ExampleError((example_4, 5))
 
 def project(G: GlobalT, r: Participant) -> LocalT:
     """Wrapper function for projection in definition 5"""
