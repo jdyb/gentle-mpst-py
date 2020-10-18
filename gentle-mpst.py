@@ -48,6 +48,10 @@ class Participant(object):
         return self.rname
     def __repr__(self):
         return f'Participant({self.rname})'
+    def __eq__(self, other):
+        return self.rname == other.rname
+    def __hash__(self):
+        return hash((Participant, self.rname))
 
 class Sort(object):
     """Sorts"""
