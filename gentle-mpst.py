@@ -88,7 +88,7 @@ class LEnd(LocalT):
 
 class LExternalChoice(LocalT):
     """External Choice / Branching Type"""
-    """The ampersand-thing and exclamation-mark-thing"""
+    """The ampersand-thing and question-mark-thing"""
 
     def __init__(self, p, alternatives: Dict[Label, Tuple[Sort,LocalT]]):
         self.p, self.alternatives = p, alternatives
@@ -105,7 +105,7 @@ class LExternalChoice(LocalT):
 
 class LInternalChoice(LocalT):
     """Internal Choice / Selection type"""
-    """circle-cross and questionmarks"""
+    """circle-cross and exclamationmarks"""
 
     def __init__(self, q, alternatives: Dict[Label, Tuple[Sort,LocalT]]):
         self.q, self.alternatives = q, alternatives
