@@ -324,7 +324,7 @@ def merge(T1: LocalT, T2: LocalT):
 def example_4():
     # Participants and labels used in the example.
     p, q = Participant('p'), Participant('q')
-    l, l3, l4 = Label('l'), Label('l3'), Label('l4')
+    l, l3, l4, l5 = Label('l'), Label('l3'), Label('l4'), Label('l5')
     # First line in example.
     tst1 = LInternalChoice(q,{l:(SNat(),LEnd())})
     if merge(tst1, tst1) != tst1:
@@ -337,6 +337,14 @@ def example_4():
     if merge(LInternalChoice(q,{l3:(SNat(), LEnd())}),
             LInternalChoice(q,{l4:(SNat(), LEnd())})) != None:
         raise ExampleError((example_4, 3))
+    # Fourth line in example
+    if merge(LExternalChoice(q, {l3: (SInt(), LEnd()), l5: (SNat(), LEnd())}),\
+            LExternalChoice(q, {l4: (SInt(), LEnd()), l5: (SNat(), LEnd())})) \
+            == LExternalChoice(q, {
+                l3: (SInt(), LEnd()),
+                l4: (SInt(), LEnd()),
+                l5: (SNat(), LEnd())}):
+        raise ExampleError((example_4, 4))
 
 def project(G: GlobalT, r: Participant) -> LocalT:
     """Wrapper function for projection in definition 5"""
