@@ -662,8 +662,10 @@ def section_4_1_example_5():
     Lp_ = LInternalChoice(q, {l1: (SNat(), LEnd()), l2: (SBool(), LEnd())})
     # Expected local type of participant q
     Lq_0 = LInternalChoice(r, {l3: (SInt(), LEnd()), l5: (SNat(), LEnd())})
-    Lq_1 = LInternalChoice(r, {l5: (SInt(), LEnd()), l5: (SNat(), LEnd())})
+    Lq_1 = LInternalChoice(r, {l5: (SNat(), LEnd()), l4: (SInt(), LEnd())})
     Lq_ = LExternalChoice(p, {l1: (SNat(), Lq_0), l2: (SBool(), Lq_1)})
+    # FIXME BUG Lq has LExternalChoice as choices
+    #   (Lq_0 and Lq_1 does not match).
     # Expected local type of participant r
     Lr_ = LExternalChoice(q, {l3: (SInt(), LEnd()), l4: (SInt(), LEnd()),
         l5: (SNat(), LEnd())})
