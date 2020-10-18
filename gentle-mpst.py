@@ -38,7 +38,7 @@ class Label(object):
     def __eq__(self, other):
         if isinstance(other, Label):
             return self.lname == other.lname
-        return False
+        return NotImplemented
     def __hash__(self):
         return hash((Label, self.lname))
 
@@ -53,7 +53,7 @@ class Participant(object):
     def __eq__(self, other):
         if isinstance(other, Participant):
             return self.rname == other.rname
-        return False
+        return NotImplemented
     def __hash__(self):
         return hash((Participant, self.rname))
 
