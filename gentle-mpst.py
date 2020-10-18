@@ -360,6 +360,17 @@ class GCom(GlobalT):
             # Should never be reached.
             raise RuntimeError()
 
+    def __eq__(self, other):
+        if isinstance(other, GCom):
+            return self.source == other.source and \
+                    self.destination == other.destination and \
+                    self.alternatives == other.alternatives
+        return NotImplemented
+
+    def __hash__(self):
+        return hash((self.source, self.destination,
+            frozenset(self.alternatives.keys())))
+
 def merge(T1: LocalT, T2: LocalT):
     """Merging operator."""
     """
