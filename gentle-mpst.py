@@ -340,7 +340,7 @@ def example_4():
     # Fourth line in example
     if merge(LExternalChoice(q, {l3: (SInt(), LEnd()), l5: (SNat(), LEnd())}),\
             LExternalChoice(q, {l4: (SInt(), LEnd()), l5: (SNat(), LEnd())})) \
-            == LExternalChoice(q, {
+            != LExternalChoice(q, {
                 l3: (SInt(), LEnd()),
                 l4: (SInt(), LEnd()),
                 l5: (SNat(), LEnd())}):
