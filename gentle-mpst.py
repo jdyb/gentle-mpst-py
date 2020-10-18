@@ -192,6 +192,15 @@ class LRec(LocalT):
     def __repr__(self):
         return f'LRec({self.ltvariable}, {repr(self.local_type)})'
 
+    def __eq__(self, other):
+        if isinstance(other, LRec):
+            return self.ltvariable == other.ltvariable and \
+                    self.local_type == other.local_type
+        return NotImplemented
+
+    def __hash__(self):
+        return hash((self.ltvariable, self.local_type))
+
 # The subclasses of GlobalT are from section "4.1 Types and Projections"
 # definition 2. 
 
@@ -210,6 +219,7 @@ class GlobalT(object):
     def __eq__(self, other):
         # Prevent use of the default eq implementation.
         raise NotImplementedError()
+
 
 class GEnd(GlobalT):
     """Global type signifying terminated protocol."""
