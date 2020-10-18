@@ -51,7 +51,9 @@ class Participant(object):
     def __repr__(self):
         return f'Participant({self.rname})'
     def __eq__(self, other):
-        return self.rname == other.rname
+        if isinstance(other, Participant):
+            return self.rname == other.rname
+        return False
     def __hash__(self):
         return hash((Participant, self.rname))
 
