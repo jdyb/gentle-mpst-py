@@ -338,12 +338,11 @@ def example_4():
             LInternalChoice(q,{l4:(SNat(), LEnd())})) != None:
         raise ExampleError((example_4, 3))
     # Fourth line in example
-    if merge(LExternalChoice(q, {l3: (SInt(), LEnd()), l5: (SNat(), LEnd())}),\
-            LExternalChoice(q, {l4: (SInt(), LEnd()), l5: (SNat(), LEnd())})) \
-            != LExternalChoice(q, {
-                l3: (SInt(), LEnd()),
-                l4: (SInt(), LEnd()),
-                l5: (SNat(), LEnd())}):
+    tmp4_l = LExternalChoice(q, {l3: (SInt(), LEnd()), l5: (SNat(), LEnd())})
+    tmp4_r = LExternalChoice(q, {l4: (SInt(), LEnd()), l5: (SNat(), LEnd())})
+    tmp4 = LExternalChoice(q, {l3: (SInt(), LEnd()), l4: (SInt(), LEnd()),
+        l5: (SNat(), LEnd())})
+    if merge(tmp4_l, tmp4_r) != tmp4:
         raise ExampleError((example_4, 4))
     # Fifth line in example
     tmp5_l = LExternalChoice(q, {l3: (SNat(), LEnd())})
