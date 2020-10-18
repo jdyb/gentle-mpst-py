@@ -111,6 +111,12 @@ class LEnd(LocalT):
     def __repr__(self):
         return 'LEnd()'
 
+    def __eq__(self, other):
+        return isinstance(other, LEnd)
+
+    def __hash__(self):
+        return hash(LEnd)
+
 
 class LExternalChoice(LocalT):
     """External Choice / Branching Type"""
