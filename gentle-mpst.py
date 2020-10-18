@@ -66,16 +66,28 @@ class SNat(Sort):
         return 'nat'
     def __repr__(self):
         return 'SNat()'
+    def __eq__(self, other):
+        return isinstance(other, SNat)
+    def __hash__(self):
+        return hash(SNat)
 
 class SInt(Sort):
     # FIXME Where is this defined
     def __repr__(self):
         return 'SInt()'
+    def __eq__(self, other):
+        return isinstance(other, SInt)
+    def __hash__(self):
+        return hash(SInt)
 
 class SBool(Sort):
     # FIXME Where is this defined
     def __repr__(self):
         return 'SBool()'
+    def __eq__(self, other):
+        return isinstance(other, SBool)
+    def __hash__(self):
+        return hash(SBool)
 
 # The subclasses of Local are from section "4.1 Types and Projectsions" and
 # "Definition 3 (Local Session Types)"
