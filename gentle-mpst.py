@@ -48,7 +48,9 @@ class Participant(object):
 class Sort(object):
     """Sorts"""
     # FIXME From where are the sorts
-    pass
+    def __eq__(self, other):
+        # Prevent use of the default eq implementation.
+        raise NotImplementedError()
 
 class SNat(Sort):
     # FIXME Where is this defined
@@ -74,6 +76,10 @@ class LocalT(object):
     """Local type."""
 
     def pt(self) -> Set[Participant]:
+        raise NotImplementedError()
+
+    def __eq__(self, other):
+        # Prevent use of the default eq implementation.
         raise NotImplementedError()
 
 class LEnd(LocalT):
@@ -155,6 +161,10 @@ class GlobalT(object):
 
     def project(self, r: Participant) -> LocalT:
         """Merging projection. See 'Definition 5'."""
+        raise NotImplementedError()
+
+    def __eq__(self, other):
+        # Prevent use of the default eq implementation.
         raise NotImplementedError()
 
 class GEnd(GlobalT):
@@ -355,7 +365,9 @@ def project(G: GlobalT, r: Participant) -> LocalT:
     return G.project(r)
 
 class Expression(object):
-    pass # Intentionally empty superclass.
+    def __eq__(self, other):
+        # Prevent use of the default eq implementation.
+        raise NotImplementedError()
 
 class Succ(Expression):
     def __init__(self, arg):
@@ -507,7 +519,9 @@ class MState(object):
         strs = [f'\t{role}:\t{str(self.participants[role])}\n'
                 for role in self.participants]
         return 'MState(\n{}\t)'.format(''.join(strs))
-
+    def __eq__(self, other):
+        # Prevent use of the default eq implementation.
+        raise NotImplementedError()
 
 # FIXME Wrap in function. Add reference to example 2.
 def example_2():
