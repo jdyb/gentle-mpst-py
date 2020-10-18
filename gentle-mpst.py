@@ -36,7 +36,9 @@ class Label(object):
     def __repr__(self):
         return f'Label({self.lname})'
     def __eq__(self, other):
-        return self.lname == other.lname
+        if isinstance(other, Label):
+            return self.lname == other.lname
+        return False
     def __hash__(self):
         return hash((Label, self.lname))
 
