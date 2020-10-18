@@ -35,6 +35,10 @@ class Label(object):
         return str(self.lname)
     def __repr__(self):
         return f'Label({self.lname})'
+    def __eq__(self, other):
+        return self.lname == other.lname
+    def __hash__(self):
+        return hash((Label, self.lname))
 
 class Participant(object):
     """Session participant, from "Notation 01 (Base sets)" """
