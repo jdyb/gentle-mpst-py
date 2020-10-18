@@ -173,6 +173,14 @@ class LVariable(LocalT):
     def __repr__(self):
         return f'LVariable({self.ltvname})'
 
+    def __eq__(self, other):
+        if isinstance(other, LVariable):
+            return self.ltvname == other.ltvname
+        return NotImplemented
+
+    def __hash__(self):
+        return hash((LVariable, self.ltvname))
+
 class LRec(LocalT):
 
     def __init__(self, ltvariable: LVariable, local_type: LocalT):
