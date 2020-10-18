@@ -135,6 +135,17 @@ class LExternalChoice(LocalT):
     def __repr__(self):
         return f'LExternalChoice({repr(self.p)}, {repr(self.alternatives)})'
 
+    def __eq__(self, other):
+        if isinstance(other, LExternalChoice):
+            return self.p == other.p and self.alternatives == other.alternatives
+        return NotImplemented
+
+    def __hash__(self):
+        # Will not bother with recursing down the entire type now, this is
+        # probably good enough to avoid most collisions.
+        return hash((self.p, frozenset(self.alternatives.keys())))
+
+
 class LInternalChoice(LocalT):
     """Internal Choice / Selection type"""
     """circle-cross and exclamationmarks"""
