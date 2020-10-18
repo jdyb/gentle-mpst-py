@@ -246,6 +246,12 @@ class GEnd(GlobalT):
         """[PROJ-END]"""
         return LEnd()
 
+    def __eq__(self, other):
+        return isinstance(other, GEnd)
+
+    def __hash__(self):
+        return hash(GEnd)
+
 class GTVar(GlobalT):
     """Global type variable"""
 
