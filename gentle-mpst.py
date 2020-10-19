@@ -275,7 +275,7 @@ class GRec(GlobalT):
         return self.global_type.pt()
 
     def project(self, r):
-        """[PROJ-REC-1/2] [PROJ-REC-2]"""
+        """[PROJ-REC-1] [PROJ-REC-2]"""
         pts = self.global_type.pt()
         if r in pts:
             # [PROJ-REC-1]
@@ -321,13 +321,13 @@ class GCom(GlobalT):
             local_alternatives[label] = (sort, global_type.project(r))
         return LExternalChoice(self.source, local_alternatives)
 
-    def _proj_out(self, r: Participant) -> LExternalChoice:
+    def _proj_out(self, r: Participant) -> LInternalChoice:
         """ [PROJ-OUT] """
         local_alternatives = {}
         for label in self.alternatives:
             sort, global_type = self.alternatives[label]
             local_alternatives[label] = (sort, global_type.project(r))
-        return LExternalChoice(self.destination, local_alternatives)
+        return LInternalChoice(self.destination, local_alternatives)
 
     def _proj_cont(self, r: Participant):
         """ [PROJ-CONT] """
