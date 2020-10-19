@@ -528,7 +528,7 @@ class Send(Process):
     def __repr__(self):
         return f'Send({self.destination}, {self.label}, {self.expr}, {self.continuation})'
     def step(self, role, state0):
-        proc_dst = state.participants[self.destination]
+        proc_dst = state0.participants[self.destination]
         data = eval_expr(self.expr, self.environment)
         try:
             proc_dst = proc_dst.comm(role, self.label, data)
@@ -607,7 +607,6 @@ class MState(object):
         for role, proc in dict(self.participants).items():
             state = proc.step(role, self)
             if state:
-                print(f'# Stepped {role}')
                 # Found a step, return new state
                 return state
         # No process that can step was found.
@@ -624,7 +623,6 @@ class MState(object):
         # Prevent use of the default eq implementation.
         raise NotImplementedError()
 
-# FIXME Wrap in function. Add reference to example 2.
 def example_2():
     Bob, Alice, Carol = \
             Participant('Bob'), Participant('Alice'), Participant('Carol')
@@ -635,8 +633,12 @@ def example_2():
             Recv(Alice, l4, x, Send(Carol, l2, 2, Inaction())))
     PCarol = Recv(Bob, l2, x, Send(Alice, l3, Succ(x), Inaction()))
     state = MState({Alice: PAlice, Bob: PBob, Carol: PCarol})
-    while state:
-        state = state.step()
+    while True:
+        tmp = state.step()
+        if tmp:
+            state = tmp
+        else:
+            break
     if state.participants[Alice].environment[x] != 101:
         raise ExampleError(example_2)
 
@@ -680,6 +682,7 @@ def section_4_1_example_5():
     if Lq != Lq_ or Lp != Lp_ or Lr != Lr_:
         raise ExampleError((section_4_1_example_5, Lq, Lp, Lr))
 
+example_2()
 example_4()
 section_4_1_example_5()
 
