@@ -487,6 +487,12 @@ class Variable(Expression):
         return self.vname
     def __repr__(self):
         return f'Variable({self.vname})'
+    def __eq__(self, other):
+        if isinstance(other, Variable):
+            return self.vname == other.vname
+        return NotImplemented
+    def __hash__(self):
+        return hash((Variable, self.vname))
     def eval(self, env):
         return env[self]
 
