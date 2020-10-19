@@ -682,7 +682,25 @@ def section_4_1_example_5():
     if Lq != Lq_ or Lp != Lp_ or Lr != Lr_:
         raise ExampleError((section_4_1_example_5, Lq, Lp, Lr))
 
+def example_6():
+    l1, l2, l3, l4 = Label('l1'), Label('l2'), Label('l3'), Label('l4')
+    p, q, r = Participant('p'), Participant('q'), Participant('r')
+    G1 = GCom(r, q, {l3, (SNat(), GEnd())})
+    G2 = GCom(r, q, {l4: (SNat(), GEnd())})
+    G = GCom(p, q, {l1: (SNat(), G1), l2: (SBool(), G2)})
+
+    Gp = LInternalChoice(q, {l1: (SNat(), LEnd()), l2: (SBool(), LEnd())})
+    Gq = LExternalChoice(p, {l1: (SNat(), LExternalChoice(r, {l3: (SNat(), LEnd())}))})
+
+    if G.project(p) != Gp:
+        raise ExampleError((example_6, 1))
+    if G.project(q) != Gq:
+        raise ExampleError((example_6, 2))
+    if G.project(r) != None:
+        raise ExampleError((example_6, 3))
+
 example_2()
 example_4()
 section_4_1_example_5()
+example_6()
 

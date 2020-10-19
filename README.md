@@ -40,7 +40,7 @@ Currently working on projection and merging.
 2. Implemented in `example_2()`
 3. Not implemented (skipped non-merging projection).
 4. Implemented in `example_4()`
-5. Not started.
+5. Implemented in `section_4_1_example_5().
 6. Not started.
 7. Not started.
 8. Not started.
