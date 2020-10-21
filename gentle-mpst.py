@@ -60,7 +60,7 @@ class Participant(object):
 class Sort(object):
     """Sorts"""
     # FIXME From where are the sorts
-    def __eq__(self, other):
+    def __eq__(self, other: object) -> bool:
         # Prevent use of the default eq implementation.
         raise NotImplementedError()
 
