@@ -222,7 +222,7 @@ class LRec(LocalT):
 class GlobalT(object):
     """Global type"""
 
-    def pt(self):
+    def pt(self) -> Set[Participant]:
         """Compute the set of participants of a global type.
         Returns the set of participants."""
         raise NotImplementedError()
@@ -231,7 +231,7 @@ class GlobalT(object):
         """Merging projection. See 'Definition 5'."""
         raise NotImplementedError()
 
-    def __eq__(self, other):
+    def __eq__(self, other: object) -> bool:
         # Prevent use of the default eq implementation.
         raise NotImplementedError()
 
