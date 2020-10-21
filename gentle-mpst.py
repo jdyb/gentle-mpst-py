@@ -258,10 +258,10 @@ class GTVar(GlobalT):
     def __init__(self, name: str):
         self.gtvname = name
 
-    def pt(self):
+    def pt(self) -> Set[Participant]:
         return set()
 
-    def project(self, r):
+    def project(self, r: Participant) -> LVariable:
         """[PROJ-VAR]"""
         return LVariable(self.gtvname)
 
