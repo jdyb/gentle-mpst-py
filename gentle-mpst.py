@@ -154,7 +154,7 @@ class LInternalChoice(LocalT):
     """Internal Choice / Selection type"""
     """circle-cross and exclamationmarks"""
 
-    def __init__(self, q, alternatives: Dict[Label, Tuple[Sort,LocalT]]):
+    def __init__(self, q: Participant, alternatives: Dict[Label, Tuple[Sort,LocalT]]):
         self.q, self.alternatives = q, alternatives
 
     def pt(self) -> Set[Participant]:
@@ -164,15 +164,15 @@ class LInternalChoice(LocalT):
             pts.add(ltype.pt())
         return pts
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return f'LInternalChoice({repr(self.q)}, {repr(self.alternatives)})'
 
-    def __eq__(self, other):
+    def __eq__(self, other: object) -> bool:
         if isinstance(other, LInternalChoice):
             return self.q == other.q and self.alternatives == other.alternatives
         return NotImplemented
 
-    def __hash__(self):
+    def __hash__(self) -> int:
         # Will not bother with recursing down the entire type now, this is
         # probably good enough to avoid most collisions.
         return hash((self.q, frozenset(self.alternatives.keys())))
