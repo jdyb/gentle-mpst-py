@@ -512,11 +512,11 @@ def eval_expr(expr: Expression, env: Dict[Variable, Any]) -> Any:
         return expr.eval(env)
 
 class Process(object):
-    def __init__(self):
-        self.environment = {}
-    def step(self, role, state):
+    def __init__(self) -> None:
+        self.environment: Dict[Variable, Any] = {}
+    def step(self, role: Participant, state: 'MState') -> Optional['MState']:
         raise NotImplementedError()
-    def comm(self, label, data):
+    def comm(self, label: Label, data: Any) -> 'Process':
         raise CannotCommunicate()
 
 class Inaction(Process):
