@@ -29,17 +29,17 @@ class ExampleError(Exception):
 # Section 3 "Synchronous Multiparty Session Calculus", Notation 01 (Base Sets)
 
 class Label(object):
-    def __init__(self, name):
+    def __init__(self, name: str):
         self.lname = name
-    def __str__(self):
+    def __str__(self) -> str:
         return str(self.lname)
-    def __repr__(self):
+    def __repr__(self) -> str:
         return f'Label({self.lname})'
-    def __eq__(self, other):
+    def __eq__(self, other: object) -> bool:
         if isinstance(other, Label):
             return self.lname == other.lname
         return NotImplemented
-    def __hash__(self):
+    def __hash__(self) -> int:
         return hash((Label, self.lname))
 
 class Participant(object):
