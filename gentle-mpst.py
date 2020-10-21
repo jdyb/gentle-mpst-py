@@ -271,10 +271,10 @@ class GRec(GlobalT):
     def __init__(self, gtvariable: GTVar, global_type: GlobalT):
         self.gtvariable, self.global_type = gtvariable, global_type
 
-    def pt(self):
+    def pt(self) -> Set[Participant]:
         return self.global_type.pt()
 
-    def project(self, r):
+    def project(self, r: Participant) -> LocalT:
         """[PROJ-REC-1] [PROJ-REC-2]"""
         pts = self.global_type.pt()
         if r in pts:
@@ -288,13 +288,13 @@ class GRec(GlobalT):
             # Should never be reached.
             raise RuntimeError()
 
-    def __eq__(self, other):
+    def __eq__(self, other: object) -> bool:
         if isinstance(other, GRec):
             return self.gtvariable == other.gtvariable and \
                     self.global_type == other.global_type
         return NotImplemented
 
-    def __hash__(self):
+    def __hash__(self) -> int:
         return hash((self.gtvariable, self.global_type))
 
 class GCom(GlobalT):
