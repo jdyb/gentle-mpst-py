@@ -44,17 +44,17 @@ class Label(object):
 
 class Participant(object):
     """Session participant, from "Notation 01 (Base sets)" """
-    def __init__(self, name):
+    def __init__(self, name: str):
         self.rname = name
-    def __str__(self):
+    def __str__(self) -> str:
         return self.rname
-    def __repr__(self):
+    def __repr__(self) -> str:
         return f'Participant({self.rname})'
-    def __eq__(self, other):
+    def __eq__(self, other: object) -> bool:
         if isinstance(other, Participant):
             return self.rname == other.rname
         return NotImplemented
-    def __hash__(self):
+    def __hash__(self) -> int:
         return hash((Participant, self.rname))
 
 class Sort(object):
