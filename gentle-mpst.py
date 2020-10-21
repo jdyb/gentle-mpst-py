@@ -185,15 +185,15 @@ class LVariable(LocalT):
     def pt(self) -> Set[Participant]:
         return set()
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return f'LVariable({self.ltvname})'
 
-    def __eq__(self, other):
+    def __eq__(self, other: object) -> bool:
         if isinstance(other, LVariable):
             return self.ltvname == other.ltvname
         return NotImplemented
 
-    def __hash__(self):
+    def __hash__(self) -> int:
         return hash((LVariable, self.ltvname))
 
 class LRec(LocalT):
