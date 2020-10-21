@@ -102,7 +102,7 @@ class LocalT(object):
     def pt(self) -> Set[Participant]:
         raise NotImplementedError()
 
-    def __eq__(self, other):
+    def __eq__(self, other: object) -> bool:
         # Prevent use of the default eq implementation.
         raise NotImplementedError()
 
