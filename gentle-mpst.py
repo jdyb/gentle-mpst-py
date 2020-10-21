@@ -480,19 +480,19 @@ class Expression(object):
         raise NotImplementedError()
 
 class Variable(Expression):
-    def __init__(self, name):
+    def __init__(self, name: str):
         self.vname = name
-    def __str__(self):
+    def __str__(self) -> str:
         return self.vname
-    def __repr__(self):
+    def __repr__(self) -> str:
         return f'Variable({self.vname})'
-    def __eq__(self, other):
+    def __eq__(self, other: object) -> bool:
         if isinstance(other, Variable):
             return self.vname == other.vname
         return NotImplemented
-    def __hash__(self):
+    def __hash__(self) -> int:
         return hash((Variable, self.vname))
-    def eval(self, env):
+    def eval(self, env: Dict['Variable', Any]) -> Any:
         return env[self]
 
 class Succ(Expression):
