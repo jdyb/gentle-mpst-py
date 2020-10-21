@@ -519,6 +519,34 @@ class Process(object):
     def comm(self, label: Label, data: Any) -> 'Process':
         raise CannotCommunicate()
 
+class MState(object):
+    def __init__(self, participants):
+        Process.__init__(self)
+        """Initialize state with dict of participants."""
+        self.participants = dict(participants)
+    def step(self):
+        """Perform either one computation or communication step of the
+        operational semantics."""
+        # Search for a process that can step
+        for role, proc in dict(self.participants).items():
+            state = proc.step(role, self)
+            if state:
+                # Found a step, return new state
+                return state
+        # No process that can step was found.
+        return None
+    def replace(self, role, proc):
+        participants1 = dict(self.participants)
+        participants1[role] = proc
+        return MState(participants1)
+    def __repr__(self):
+        strs = [f'\t{role}:\t{str(self.participants[role])}\n'
+                for role in self.participants]
+        return 'MState(\n{}\t)'.format(''.join(strs))
+    def __eq__(self, other):
+        # Prevent use of the default eq implementation.
+        raise NotImplementedError()
+
 class Inaction(Process):
     def __init__(self):
         Process.__init__(self)
@@ -609,34 +637,6 @@ class ExtChoice(Process):
                 continue
         # No alternative can communicate.
         raise CannotCommunicate()
-
-class MState(object):
-    def __init__(self, participants):
-        Process.__init__(self)
-        """Initialize state with dict of participants."""
-        self.participants = dict(participants)
-    def step(self):
-        """Perform either one computation or communication step of the
-        operational semantics.""" 
-        # Search for a process that can step
-        for role, proc in dict(self.participants).items():
-            state = proc.step(role, self)
-            if state:
-                # Found a step, return new state
-                return state
-        # No process that can step was found.
-        return None
-    def replace(self, role, proc):
-        participants1 = dict(self.participants)
-        participants1[role] = proc
-        return MState(participants1)
-    def __repr__(self):
-        strs = [f'\t{role}:\t{str(self.participants[role])}\n'
-                for role in self.participants]
-        return 'MState(\n{}\t)'.format(''.join(strs))
-    def __eq__(self, other):
-        # Prevent use of the default eq implementation.
-        raise NotImplementedError()
 
 def example_2():
     Bob, Alice, Carol = \
