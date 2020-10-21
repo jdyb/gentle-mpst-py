@@ -520,11 +520,10 @@ class Process(object):
         raise CannotCommunicate()
 
 class MState(object):
-    def __init__(self, participants):
-        Process.__init__(self)
+    def __init__(self, participants: Dict[Participant, Process]):
         """Initialize state with dict of participants."""
         self.participants = dict(participants)
-    def step(self):
+    def step(self) -> Optional['MState']:
         """Perform either one computation or communication step of the
         operational semantics."""
         # Search for a process that can step
@@ -535,16 +534,18 @@ class MState(object):
                 return state
         # No process that can step was found.
         return None
-    def replace(self, role, proc):
+    def replace(self, role: Participant, proc: Process) -> 'MState':
         participants1 = dict(self.participants)
         participants1[role] = proc
         return MState(participants1)
-    def __repr__(self):
+    def __repr__(self) -> str:
         strs = [f'\t{role}:\t{str(self.participants[role])}\n'
                 for role in self.participants]
         return 'MState(\n{}\t)'.format(''.join(strs))
-    def __eq__(self, other):
+    def __eq__(self, other: object) -> bool:
         # Prevent use of the default eq implementation.
+        # FIXME This will still allow comparison if other implements it,
+        #   or if it falls back to identity comparison.
         raise NotImplementedError()
 
 class Inaction(Process):
