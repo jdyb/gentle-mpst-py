@@ -126,7 +126,7 @@ class LExternalChoice(LocalT):
     """External Choice / Branching Type"""
     """The ampersand-thing and question-mark-thing"""
 
-    def __init__(self, p, alternatives: Dict[Label, Tuple[Sort,LocalT]]):
+    def __init__(self, p: Participant, alternatives: Dict[Label, Tuple[Sort,LocalT]]):
         self.p, self.alternatives = p, alternatives
 
     def pt(self) -> Set[Participant]:
@@ -136,15 +136,15 @@ class LExternalChoice(LocalT):
             pts.add(ltype.pt())
         return pts
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return f'LExternalChoice({repr(self.p)}, {repr(self.alternatives)})'
 
-    def __eq__(self, other):
+    def __eq__(self, other: object) -> bool:
         if isinstance(other, LExternalChoice):
             return self.p == other.p and self.alternatives == other.alternatives
         return NotImplemented
 
-    def __hash__(self):
+    def __hash__(self) -> int:
         # Will not bother with recursing down the entire type now, this is
         # probably good enough to avoid most collisions.
         return hash((self.p, frozenset(self.alternatives.keys())))
