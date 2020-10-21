@@ -20,7 +20,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-from typing import Dict, Tuple, Set, List, FrozenSet
+from typing import Dict, Tuple, Set, List, FrozenSet, Optional
 
 class ExampleError(Exception):
     """This is raised if an example does not produce the expected results"""
@@ -300,11 +300,11 @@ class GRec(GlobalT):
 class GCom(GlobalT):
     """Global type for message communication between two participants."""
 
-    def __init__(self, source, destination, alternatives):
+    def __init__(self, source: Participant, destination: Participant,
+            alternatives: Dict[Label, Tuple[Sort, GlobalT]]):
         """Alternatives is a dict, label keys."""
-        self.source: Participant = source
-        self.destination: Participant = destination
-        self.alternatives: Dict[Label, Tuple[Sort, GlobalT]] = alternatives
+        self.source, self.destination, self.alternatives = \
+                source, destination, alternatives
 
     def pt(self) -> Set[Participant]:
         pts = set((self.source, self.destination))
@@ -329,7 +329,7 @@ class GCom(GlobalT):
             local_alternatives[label] = (sort, global_type.project(r))
         return LInternalChoice(self.destination, local_alternatives)
 
-    def _proj_cont(self, r: Participant):
+    def _proj_cont(self, r: Participant) -> Optional[LocalT]:
         """ [PROJ-CONT] """
         # FIXME Return type?
         # FIXME Check that alternatives has at least one element.
@@ -348,7 +348,7 @@ class GCom(GlobalT):
                 return None
         return merged_type
 
-    def project(self, r):
+    def project(self, r: Participant) -> LocalT:
         """[PROJ-IN] [PROJ-OUT] [PROJ-CONT]"""
         if self.destination == r:
             return self._proj_in(r)
@@ -360,14 +360,14 @@ class GCom(GlobalT):
             # Should never be reached.
             raise RuntimeError()
 
-    def __eq__(self, other):
+    def __eq__(self, other: object) -> bool:
         if isinstance(other, GCom):
             return self.source == other.source and \
                     self.destination == other.destination and \
                     self.alternatives == other.alternatives
         return NotImplemented
 
-    def __hash__(self):
+    def __hash__(self) -> int:
         return hash((self.source, self.destination,
             frozenset(self.alternatives.keys())))
 
