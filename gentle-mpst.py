@@ -86,11 +86,11 @@ class SInt(Sort):
 
 class SBool(Sort):
     # FIXME Where is this defined
-    def __repr__(self):
+    def __repr__(self) -> str:
         return 'SBool()'
-    def __eq__(self, other):
+    def __eq__(self, other: object) -> bool:
         return isinstance(other, SBool)
-    def __hash__(self):
+    def __hash__(self) -> int:
         return hash(SBool)
 
 # The subclasses of Local are from section "4.1 Types and Projectsions" and
