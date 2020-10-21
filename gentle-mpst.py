@@ -549,13 +549,13 @@ class MState(object):
         raise NotImplementedError()
 
 class Inaction(Process):
-    def __init__(self):
+    def __init__(self) -> None:
         Process.__init__(self)
-    def __str__(self):
+    def __str__(self) -> str:
         return repr(self)
-    def __repr__(self):
+    def __repr__(self) -> str:
         return f'Inaction({repr(self.environment)})'
-    def step(self, role, state):
+    def step(self, role: Participant, state: MState) -> Optional[MState]:
         # Nothing to step
         return None
 
