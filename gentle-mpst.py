@@ -310,7 +310,7 @@ class GCom(GlobalT):
         pts = set((self.source, self.destination))
         for label in self.alternatives:
             Si, Gi = self.alternatives[label]
-            pts.add(Gi.pt())
+            pts.update(Gi.pt())
         return pts
 
     def _proj_in(self, r: Participant) -> LExternalChoice:
