@@ -227,7 +227,7 @@ class GlobalT(object):
         Returns the set of participants."""
         raise NotImplementedError()
 
-    def project(self, r: Participant) -> LocalT:
+    def project(self, r: Participant) -> Optional[LocalT]:
         """Merging projection. See 'Definition 5'."""
         raise NotImplementedError()
 
@@ -274,13 +274,15 @@ class GRec(GlobalT):
     def pt(self) -> Set[Participant]:
         return self.global_type.pt()
 
-    def project(self, r: Participant) -> LocalT:
+    def project(self, r: Participant) -> Optional[LocalT]:
         """[PROJ-REC-1] [PROJ-REC-2]"""
         pts = self.global_type.pt()
         if r in pts:
             # [PROJ-REC-1]
-            return LRec(self.gtvariable.project(r),
-                    self.global_type.project(r))
+            tmp = self.global_type.project(r)
+            if tmp:
+                return LRec(self.gtvariable.project(r), tmp)
+            return None
         elif r not in pts:
             # [PROJ-REC-2]
             return LEnd()
@@ -313,20 +315,30 @@ class GCom(GlobalT):
             pts.update(Gi.pt())
         return pts
 
-    def _proj_in(self, r: Participant) -> LExternalChoice:
+    def _proj_in(self, r: Participant) -> Optional[LExternalChoice]:
         """ [PROJ-IN] """
         local_alternatives = {}
         for label in self.alternatives:
             sort, global_type = self.alternatives[label]
-            local_alternatives[label] = (sort, global_type.project(r))
+            tmp = global_type.project(r)
+            if tmp:
+                local_alternatives[label] = (sort, tmp)
+            else:
+                # It was not possible to project global_type onto r.
+                return None
         return LExternalChoice(self.source, local_alternatives)
 
-    def _proj_out(self, r: Participant) -> LInternalChoice:
+    def _proj_out(self, r: Participant) -> Optional[LInternalChoice]:
         """ [PROJ-OUT] """
         local_alternatives = {}
         for label in self.alternatives:
             sort, global_type = self.alternatives[label]
-            local_alternatives[label] = (sort, global_type.project(r))
+            tmp = global_type.project(r)
+            if tmp:
+                local_alternatives[label] = (sort, tmp)
+            else:
+                # It was not possible to project global_type onto r.
+                return None
         return LInternalChoice(self.destination, local_alternatives)
 
     def _proj_cont(self, r: Participant) -> Optional[LocalT]:
@@ -337,7 +349,12 @@ class GCom(GlobalT):
         local_types: List[LocalT] = []
         for label in self.alternatives:
             sort, global_type = self.alternatives[label]
-            local_types.append(global_type.project(r))
+            tmp = global_type.project(r)
+            if tmp:
+                local_types.append(tmp)
+            else:
+                # It was not possible to project global_type onto r.
+                return None
         # Now merge the local (session) types into a single local type. 
         merged_type = local_types.pop()
         for local_type in local_types:
@@ -348,7 +365,7 @@ class GCom(GlobalT):
                 return None
         return merged_type
 
-    def project(self, r: Participant) -> LocalT:
+    def project(self, r: Participant) -> Optional[LocalT]:
         """[PROJ-IN] [PROJ-OUT] [PROJ-CONT]"""
         if self.destination == r:
             return self._proj_in(r)
@@ -454,10 +471,6 @@ def example_4():
     tmp5_r = LExternalChoice(q, {l3: (SNat(), LExternalChoice(q, {l3: (SNat(), LEnd())}))})
     if merge(tmp5_l, tmp5_r) != None:
         raise ExampleError((example_4, 5))
-
-def project(G: GlobalT, r: Participant) -> LocalT:
-    """Wrapper function for projection in definition 5"""
-    return G.project(r)
 
 class Expression(object):
     def __eq__(self, other):
