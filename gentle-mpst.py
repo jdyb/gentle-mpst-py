@@ -475,23 +475,9 @@ class Expression(object):
     def __eq__(self, other: object) -> bool:
         # Prevent use of the default eq implementation.
         raise NotImplementedError()
-
-class Succ(Expression):
-    def __init__(self, arg: Expression):
-        self.arg = arg
-    def __str__(self) -> str:
-        return repr(self)
-    def __repr__(self) -> str:
-        return f'Succ({repr(self.arg)})'
-    def eval(self, env: Dict[Variable, Any]) -> Any:
+    def eval(self, env: Dict['Variable', Any]) -> Any:
         # FIXME Replace Any with a value class.
-        return 1 + eval_expr(self.arg, env)
-
-def eval_expr(expr, env):
-    if isinstance(expr, int):
-        return expr
-    else:
-        return expr.eval(env)
+        raise NotImplementedError()
 
 class Variable(Expression):
     def __init__(self, name):
@@ -508,6 +494,22 @@ class Variable(Expression):
         return hash((Variable, self.vname))
     def eval(self, env):
         return env[self]
+
+class Succ(Expression):
+    def __init__(self, arg: Expression):
+        self.arg = arg
+    def __str__(self) -> str:
+        return repr(self)
+    def __repr__(self) -> str:
+        return f'Succ({repr(self.arg)})'
+    def eval(self, env: Dict[Variable, Any]) -> Any:
+        return 1 + eval_expr(self.arg, env)
+
+def eval_expr(expr: Expression, env: Dict[Variable, Any]) -> Any:
+    if isinstance(expr, int):
+        return expr
+    else:
+        return expr.eval(env)
 
 class Process(object):
     def __init__(self):
