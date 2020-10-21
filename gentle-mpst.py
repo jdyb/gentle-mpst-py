@@ -685,7 +685,7 @@ def section_4_1_example_5():
 def example_6():
     l1, l2, l3, l4 = Label('l1'), Label('l2'), Label('l3'), Label('l4')
     p, q, r = Participant('p'), Participant('q'), Participant('r')
-    G1 = GCom(r, q, {l3, (SNat(), GEnd())})
+    G1 = GCom(r, q, {l3: (SNat(), GEnd())})
     G2 = GCom(r, q, {l4: (SNat(), GEnd())})
     G = GCom(p, q, {l1: (SNat(), G1), l2: (SBool(), G2)})
 
