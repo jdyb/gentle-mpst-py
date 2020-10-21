@@ -133,7 +133,7 @@ class LExternalChoice(LocalT):
         pts = set((self.p,))
         for label in self.alternatives:
             sort, ltype = self.alternatives[label]
-            pts.add(ltype.pt())
+            pts.update(ltype.pt())
         return pts
 
     def __repr__(self) -> str:
