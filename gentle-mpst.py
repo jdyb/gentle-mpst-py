@@ -472,7 +472,7 @@ def example_4() -> None:
         raise ExampleError((example_4, 5))
 
 class Expression(object):
-    def __eq__(self, other):
+    def __eq__(self, other: object) -> bool:
         # Prevent use of the default eq implementation.
         raise NotImplementedError()
 
