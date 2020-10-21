@@ -442,7 +442,7 @@ def merge(T1: LocalT, T2: LocalT) -> Optional[LocalT]:
     else:
         return None
 
-def example_4():
+def example_4() -> None:
     # Participants and labels used in the example.
     p, q = Participant('p'), Participant('q')
     l, l3, l4, l5 = Label('l'), Label('l3'), Label('l4'), Label('l5')
