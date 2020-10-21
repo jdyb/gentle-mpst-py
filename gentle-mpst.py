@@ -388,14 +388,13 @@ class GCom(GlobalT):
         return hash((self.source, self.destination,
             frozenset(self.alternatives.keys())))
 
-def merge(T1: LocalT, T2: LocalT):
+def merge(T1: LocalT, T2: LocalT) -> Optional[LocalT]:
     """Merging operator."""
     """
     While this could be added to each LocalT subclass, that mostly just
     duplicates the [MRG-ID] case on everything but LExternalChoice, so we use
     a function instead.
     """
-    # FIXME Return type annotation. May return None. 
     if T1 == T2:
         # [MRG-ID]
         return T1
