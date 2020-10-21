@@ -66,13 +66,13 @@ class Sort(object):
 
 class SNat(Sort):
     # FIXME Where is this defined
-    def __str__(self):
+    def __str__(self) -> str:
         return 'nat'
-    def __repr__(self):
+    def __repr__(self) -> str:
         return 'SNat()'
-    def __eq__(self, other):
+    def __eq__(self, other: object) -> bool:
         return isinstance(other, SNat)
-    def __hash__(self):
+    def __hash__(self) -> int:
         return hash(SNat)
 
 class SInt(Sort):
