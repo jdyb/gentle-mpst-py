@@ -20,7 +20,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-from typing import Dict, Tuple, Set, List, FrozenSet, Optional
+from typing import Dict, Tuple, Set, List, FrozenSet, Optional, Any
 
 class ExampleError(Exception):
     """This is raised if an example does not produce the expected results"""
@@ -477,13 +477,14 @@ class Expression(object):
         raise NotImplementedError()
 
 class Succ(Expression):
-    def __init__(self, arg):
+    def __init__(self, arg: Expression):
         self.arg = arg
-    def __str__(self):
+    def __str__(self) -> str:
         return repr(self)
-    def __repr__(self):
+    def __repr__(self) -> str:
         return f'Succ({repr(self.arg)})'
-    def eval(self, env):
+    def eval(self, env: Dict[Variable, Any]) -> Any:
+        # FIXME Replace Any with a value class.
         return 1 + eval_expr(self.arg, env)
 
 def eval_expr(expr, env):
