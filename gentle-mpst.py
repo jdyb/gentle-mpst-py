@@ -563,15 +563,16 @@ class CannotCommunicate(Exception):
     pass # Intentionally empty exception.
 
 class Send(Process):
-    def __init__(self, destination, label, expr, continuation):
+    def __init__(self, destination: Participant, label: Label,
+            expr: Expression, continuation: Process):
         Process.__init__(self)
         self.destination, self.label, self.expr, self.continuation = \
                 destination, label, expr, continuation
-    def __str__(self):
+    def __str__(self) -> str:
         return repr(self)
-    def __repr__(self):
+    def __repr__(self) -> str:
         return f'Send({self.destination}, {self.label}, {self.expr}, {self.continuation})'
-    def step(self, role, state0):
+    def step(self, role: Participant, state0: MState) -> Optional[MState]:
         proc_dst = state0.participants[self.destination]
         data = eval_expr(self.expr, self.environment)
         try:
