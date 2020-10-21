@@ -161,7 +161,7 @@ class LInternalChoice(LocalT):
         pts = set((self.q,))
         for label in self.alternatives:
             sort, ltype = self.alternatives[label]
-            pts.add(ltype.pt())
+            pts.update(ltype.pt())
         return pts
 
     def __repr__(self) -> str:
