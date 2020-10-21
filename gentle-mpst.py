@@ -516,7 +516,7 @@ class Process(object):
         self.environment: Dict[Variable, Any] = {}
     def step(self, role: Participant, state: 'MState') -> Optional['MState']:
         raise NotImplementedError()
-    def comm(self, label: Label, data: Any) -> 'Process':
+    def comm(self, role: Participant, label: Label, data: Any) -> 'Process':
         raise CannotCommunicate()
 
 class MState(object):
