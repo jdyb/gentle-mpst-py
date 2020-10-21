@@ -204,16 +204,16 @@ class LRec(LocalT):
     def pt(self) -> Set[Participant]:
         return self.local_type.pt()
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return f'LRec({self.ltvariable}, {repr(self.local_type)})'
 
-    def __eq__(self, other):
+    def __eq__(self, other: object) -> bool:
         if isinstance(other, LRec):
             return self.ltvariable == other.ltvariable and \
                     self.local_type == other.local_type
         return NotImplemented
 
-    def __hash__(self):
+    def __hash__(self) -> int:
         return hash((self.ltvariable, self.local_type))
 
 # The subclasses of GlobalT are from section "4.1 Types and Projections"
