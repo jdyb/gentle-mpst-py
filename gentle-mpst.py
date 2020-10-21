@@ -239,17 +239,17 @@ class GlobalT(object):
 class GEnd(GlobalT):
     """Global type signifying terminated protocol."""
 
-    def pt(self):
+    def pt(self) -> Set[Participant]:
         return set()
 
     def project(self, r: Participant) -> LocalT:
         """[PROJ-END]"""
         return LEnd()
 
-    def __eq__(self, other):
+    def __eq__(self, other: object) -> bool:
         return isinstance(other, GEnd)
 
-    def __hash__(self):
+    def __hash__(self) -> int:
         return hash(GEnd)
 
 class GTVar(GlobalT):
