@@ -29,7 +29,7 @@ class ExampleError(Exception):
 # Section 3 "Synchronous Multiparty Session Calculus", Notation 01 (Base Sets)
 
 class Label(object):
-    def __init__(self, name: str):
+    def __init__(self, name: int):
         self.lname = name
     def __str__(self) -> str:
         return str(self.lname)
@@ -445,7 +445,7 @@ def merge(T1: LocalT, T2: LocalT) -> Optional[LocalT]:
 def example_4() -> None:
     # Participants and labels used in the example.
     p, q = Participant('p'), Participant('q')
-    l, l3, l4, l5 = Label('l'), Label('l3'), Label('l4'), Label('l5')
+    l, l3, l4, l5 = Label(0), Label(3), Label(4), Label(5)
     # First line in example.
     tst1 = LInternalChoice(q,{l:(SNat(),LEnd())})
     if merge(tst1, tst1) != tst1:
@@ -671,7 +671,7 @@ def section_4_1_example_5():
     q, p, r = Participant('q'), Participant('p'), Participant('r')
     # Define the labels used in this example.
     l1, l2, l3, l4, l5 = \
-            Label('l1'), Label('l2'), Label('l3'), Label('l4'), Label('l5')
+            Label(1), Label(2), Label(3), Label(4), Label(5)
     # Define the global type
     G1 = GCom(q, r, {l3: (SInt(), GEnd()), l5: (SNat(), GEnd())})
     G2 = GCom(q, r, {l4: (SInt(), GEnd()), l5: (SNat(), GEnd())})
@@ -695,7 +695,7 @@ def section_4_1_example_5():
         raise ExampleError((section_4_1_example_5, Lq, Lp, Lr))
 
 def example_6():
-    l1, l2, l3, l4 = Label('l1'), Label('l2'), Label('l3'), Label('l4')
+    l1, l2, l3, l4 = Label(1), Label(2), Label(3), Label(4)
     p, q, r = Participant('p'), Participant('q'), Participant('r')
     G1 = GCom(r, q, {l3: (SNat(), GEnd())})
     G2 = GCom(r, q, {l4: (SNat(), GEnd())})
