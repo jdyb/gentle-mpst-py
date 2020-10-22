@@ -645,7 +645,7 @@ class ExtChoice(Process):
         # No alternative can communicate.
         raise CannotCommunicate()
 
-def example_2():
+def example_2() -> None:
     Bob, Alice, Carol = \
             Participant('Bob'), Participant('Alice'), Participant('Carol')
     l1, l2, l3, l4 = Label(1), Label(2), Label(3), Label(4)
