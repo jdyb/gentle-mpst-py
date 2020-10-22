@@ -664,7 +664,7 @@ def example_2() -> None:
     if state.participants[Alice].environment[x] != 101:
         raise ExampleError(example_2)
 
-def section_4_1_example_5():
+def section_4_1_example_5() -> None:
     """Section 4.1 "Types and Projections", Example 5"""
     # Notes about this example
     #
