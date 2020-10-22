@@ -704,7 +704,7 @@ def section_4_1_example_5() -> None:
     if Lq != Lq_ or Lp != Lp_ or Lr != Lr_:
         raise ExampleError((section_4_1_example_5, Lq, Lp, Lr))
 
-def example_6():
+def example_6() -> None:
     l1, l2, l3, l4 = Label(1), Label(2), Label(3), Label(4)
     p, q, r = Participant('p'), Participant('q'), Participant('r')
     G1 = GCom(r, q, {l3: (SNat(), GEnd())})
