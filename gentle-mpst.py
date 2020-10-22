@@ -587,18 +587,18 @@ class Send(Process):
             return None
 
 class Recv(Process):
-    def __init__(self, source, label, variable, continuation):
+    def __init__(self, source: Participant, label: Label, variable: Variable, continuation: Process):
         Process.__init__(self)
         self.source, self.label, self.variable, self.continuation = \
                 source, label, variable, continuation
-    def __str__(self):
+    def __str__(self) -> str:
         return repr(self)
-    def __repr__(self):
+    def __repr__(self) -> str:
         return f'Recv({self.source}, {self.label}, {self.variable}, {self.continuation})'
-    def step(self, role, state):
+    def step(self, role: Participant, state: MState) -> None:
         # Waiting for message, cannot step by ourselves.
         return None
-    def comm(self, role, label, data):
+    def comm(self, role: Participant, label: Label, data: Any) -> Process:
         if self.source != role:
             # The other process is not the one we are waiting on. 
             raise CannotCommunicate()
