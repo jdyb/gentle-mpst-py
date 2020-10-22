@@ -712,8 +712,10 @@ def example_6() -> None:
     G = GCom(p, q, {l1: (SNat(), G1), l2: (SBool(), G2)})
 
     Gp = LInternalChoice(q, {l1: (SNat(), LEnd()), l2: (SBool(), LEnd())})
-    Gq = LExternalChoice(p, {l1: (SNat(), LExternalChoice(r, {l3: (SNat(), LEnd())}))})
-
+    Gq = LExternalChoice(p, {
+        l1: (SNat(), LExternalChoice(r, {l3: (SNat(), LEnd())})),
+        l2: (SBool(), LExternalChoice(r, {l4: (SNat(), LEnd())}))
+        })
     if G.project(p) != Gp:
         raise ExampleError((example_6, 1))
     if G.project(q) != Gq:
