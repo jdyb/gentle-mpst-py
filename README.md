@@ -27,7 +27,8 @@ Example 2 is implemented.
 
 * "4.1 Types and Projections"
 
-Currently working on projection and merging.
+Merging with projection is implemented and the examples produce expected
+results.
 
 ## Remaining sections:
 
@@ -41,7 +42,7 @@ Currently working on projection and merging.
 3. Not implemented (skipped non-merging projection).
 4. Implemented in `example_4()`
 5. Implemented in `section_4_1_example_5().
-6. Not started.
+6. Implemented in `example\_6\_1()` and `example\_6\_2()`
 7. Not started.
 8. Not started.
 9. Not started.
