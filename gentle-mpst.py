@@ -610,12 +610,6 @@ class Recv(Process):
         self.continuation.environment[self.variable] = data
         return self.continuation
 
-class If(Process):
-    def __init__(self, condition, positive, negative):
-        Process.__init__(self)
-        self.condition, self.positive, self.negative = \
-                condition, positive, negative
-
 class ExtChoice(Process):
     """An external choice."""
     def __init__(self, *alternatives):
