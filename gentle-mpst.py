@@ -704,7 +704,8 @@ def section_4_1_example_5() -> None:
     if Lq != Lq_ or Lp != Lp_ or Lr != Lr_:
         raise ExampleError((section_4_1_example_5, Lq, Lp, Lr))
 
-def example_6() -> None:
+def example_6_1() -> None:
+    # First part of example 6
     l1, l2, l3, l4 = Label(1), Label(2), Label(3), Label(4)
     p, q, r = Participant('p'), Participant('q'), Participant('r')
     G1 = GCom(r, q, {l3: (SNat(), GEnd())})
@@ -717,14 +718,38 @@ def example_6() -> None:
         l2: (SBool(), LExternalChoice(r, {l4: (SNat(), LEnd())}))
         })
     if G.project(p) != Gp:
-        raise ExampleError((example_6, 1))
+        raise ExampleError((example_6_1, 1))
     if G.project(q) != Gq:
-        raise ExampleError((example_6, 2))
+        raise ExampleError((example_6_1, 2))
     if G.project(r) != None:
-        raise ExampleError((example_6, 3))
+        raise ExampleError((example_6_1, 3))
+
+def example_6_2() -> None:
+    # Second part of example 6
+    l1, l2, l3, l4 = Label(1), Label(2), Label(3), Label(4)
+    p, q, r = Participant('p'), Participant('q'), Participant('r')
+    G1 = GCom(q, r, {l3: (SNat(), GEnd())})
+    G2 = GCom(q, r, {l3: (SNat(), GCom(q, r, {l3: (SNat(), GEnd())}))})
+    G = GCom(p, q, {l1: (SNat(), G1), l2: (SBool(), G2)})
+
+    Gp = LInternalChoice(q, {l1: (SNat(), LEnd()), l2: (SBool(), LEnd())})
+    Gq = LExternalChoice(p, {
+        # p?l1(nat).r!l3(nat) 
+        l1: (SNat(), LInternalChoice(r, {l3: (SNat(), LEnd())})),
+        # p?l2(bool).r!l3(nat).r!l3(nat)
+        l2: (SBool(), LInternalChoice(r, {l3: (SNat(), LInternalChoice(r, {l3: (SNat(), LEnd())}))}))
+        })
+    if G.project(p) != Gp:
+        raise ExampleError((example_6_2, 1))
+    if G.project(q) != Gq:
+        raise ExampleError((example_6_2, 2))
+    if G.project(r) != None:
+        raise ExampleError((example_6_2, 3))
+
 
 example_2()
 example_4()
 section_4_1_example_5()
-example_6()
+example_6_1()
+example_6_2()
 
