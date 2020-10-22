@@ -612,18 +612,19 @@ class Recv(Process):
 
 class ExtChoice(Process):
     """An external choice."""
-    def __init__(self, *alternatives):
+    def __init__(self, *alternatives: Recv):
         Process.__init__(self)
         """The alternatives must be a nonempty list of Recv processes."""
+        # FIXME Enforce nonemptyness
         self.alternatives = alternatives
-    def __str__(self):
+    def __str__(self) -> str:
         return repr(self)
-    def __repr__(self):
+    def __repr__(self) -> str:
         return f'ExtChoice({repr(self.alternatives)})'
-    def step(self, role, state):
+    def step(self, role: Participant, state: MState) -> None:
         # We are waiting for another process, cannot step by ourselves.
         return None
-    def comm(self, role, label, data):
+    def comm(self, role: Participant, label: Label, data: Any) -> Process:
         # Try each alternative and see if one of them will communicate.
         for proc in self.alternatives:
             try:
