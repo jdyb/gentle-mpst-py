@@ -505,6 +505,16 @@ class Succ(Expression):
     def eval(self, env: Dict[Variable, Any]) -> Any:
         return 1 + eval_expr(self.arg, env)
 
+class Lit(Expression):
+    def __init__(self, num: int):
+        self.num = num
+    def __str__(self) -> str:
+        return str(self.num)
+    def __repr__(self) -> str:
+        return f'Lit({self.num})'
+    def eval(self, env: Dict[Variable, Any]) -> Any:
+        return self.num
+
 def eval_expr(expr: Expression, env: Dict[Variable, Any]) -> Any:
     if isinstance(expr, int):
         return expr
@@ -640,9 +650,9 @@ def example_2():
             Participant('Bob'), Participant('Alice'), Participant('Carol')
     l1, l2, l3, l4 = Label(1), Label(2), Label(3), Label(4)
     x = Variable('x')
-    PAlice = Send(Bob, l1, 50, Recv(Carol, l3, x, Inaction()))
-    PBob = ExtChoice(Recv(Alice, l1, x, Send(Carol, l2, 100, Inaction())),
-            Recv(Alice, l4, x, Send(Carol, l2, 2, Inaction())))
+    PAlice = Send(Bob, l1, Lit(50), Recv(Carol, l3, x, Inaction()))
+    PBob = ExtChoice(Recv(Alice, l1, x, Send(Carol, l2, Lit(100), Inaction())),
+            Recv(Alice, l4, x, Send(Carol, l2, Lit(2), Inaction())))
     PCarol = Recv(Bob, l2, x, Send(Alice, l3, Succ(x), Inaction()))
     state = MState({Alice: PAlice, Bob: PBob, Carol: PCarol})
     while True:
