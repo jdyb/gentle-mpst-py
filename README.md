@@ -7,7 +7,7 @@ The implementation has been tested with Python 3.6 on Ubuntu 18.04.5 and
 mypy 0.79. It probably works with later Python versions as well. Mypy is
 not required to run the program.
 
-This is not a really intended to be a tool or library, it is just a single-file
+This is not intended to be a tool or library, it is just a single-file
 program that contains implementations of the algorithms and the examples
 provided in the paper.
 
