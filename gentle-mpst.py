@@ -746,10 +746,10 @@ def example_6_2() -> None:
     if G.project(r) != None:
         raise ExampleError((example_6_2, 3))
 
-
-example_2()
-example_4()
-section_4_1_example_5()
-example_6_1()
-example_6_2()
+if __name__ == "__main__":
+    example_2()
+    example_4()
+    section_4_1_example_5()
+    example_6_1()
+    example_6_2()
 
