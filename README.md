@@ -41,8 +41,8 @@ results.
 2. Implemented in `example_2()`
 3. Not implemented (skipped non-merging projection).
 4. Implemented in `example_4()`
-5. Implemented in `section_4_1_example_5().
-6. Implemented in `example\_6\_1()` and `example\_6\_2()`
+5. Implemented in `section_4_1_example_5().`
+6. Implemented in `example_6_1()` and `example_6_2()`
 7. Not started.
 8. Not started.
 9. Not started.
