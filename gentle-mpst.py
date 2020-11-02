@@ -63,6 +63,8 @@ class Sort(object):
     def __eq__(self, other: object) -> bool:
         # Prevent use of the default eq implementation.
         raise NotImplementedError()
+    def is_subsort(self, other: 'Sort') -> bool:
+        raise NotImplementedError()
 
 class SNat(Sort):
     # FIXME Where is this defined
@@ -74,6 +76,10 @@ class SNat(Sort):
         return isinstance(other, SNat)
     def __hash__(self) -> int:
         return hash(SNat)
+    def is_subsort(self, other: Sort) -> bool:
+        # The subsort relation is reflexive, so SNat <=: SNat.
+        # Also, per Definition 6, SNat <=: SInt
+        return isinstance(other, SNat) or isinstance(other, SInt)
 
 class SInt(Sort):
     # FIXME Where is this defined
@@ -83,6 +89,9 @@ class SInt(Sort):
         return isinstance(other, SInt)
     def __hash__(self) -> int:
         return hash(SInt)
+    def is_subsort(self, other: Sort) -> bool:
+        # SInt is not a subsort of any other sort. 
+        return isinstance(other, SInt)
 
 class SBool(Sort):
     # FIXME Where is this defined
@@ -92,6 +101,9 @@ class SBool(Sort):
         return isinstance(other, SBool)
     def __hash__(self) -> int:
         return hash(SBool)
+    def is_subsort(self, other: Sort) -> bool:
+        # SBool is not a subsort of any other sort. 
+        return isinstance(other, SBool)
 
 # The subclasses of Local are from section "4.1 Types and Projectsions" and
 # "Definition 3 (Local Session Types)"
