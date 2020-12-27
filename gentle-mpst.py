@@ -90,7 +90,7 @@ class SInt(Sort):
     def __hash__(self) -> int:
         return hash(SInt)
     def is_subsort(self, other: Sort) -> bool:
-        # SInt is not a subsort of any other sort. 
+        # SInt is not a subsort of any other sort.
         return isinstance(other, SInt)
 
 class SBool(Sort):
@@ -102,10 +102,10 @@ class SBool(Sort):
     def __hash__(self) -> int:
         return hash(SBool)
     def is_subsort(self, other: Sort) -> bool:
-        # SBool is not a subsort of any other sort. 
+        # SBool is not a subsort of any other sort.
         return isinstance(other, SBool)
 
-# The subclasses of Local are from section "4.1 Types and Projectsions" and
+# The subclasses of Local are from section "4.1 Types and Projections" and
 # "Definition 3 (Local Session Types)"
 
 class LocalT(object):
@@ -229,7 +229,7 @@ class LRec(LocalT):
         return hash((self.ltvariable, self.local_type))
 
 # The subclasses of GlobalT are from section "4.1 Types and Projections"
-# definition 2. 
+# definition 2.
 
 class GlobalT(object):
     """Global type"""
@@ -367,7 +367,7 @@ class GCom(GlobalT):
             else:
                 # It was not possible to project global_type onto r.
                 return None
-        # Now merge the local (session) types into a single local type. 
+        # Now merge the local (session) types into a single local type.
         merged_type = local_types.pop()
         for local_type in local_types:
             tmp = merge(merged_type, local_type)
@@ -419,7 +419,7 @@ def merge(T1: LocalT, T2: LocalT) -> Optional[LocalT]:
         # about k being a member of the union of J and I, but it does not make
         # it clear how Tk is to be selected. Example 4 clarifies that when
         # I and J has overlapping labels then the continuation types Ti and Tj
-        # must be the same. 
+        # must be the same.
         #
         # Compute the label-sets, we will use these for iteration later.
         labels_t1: FrozenSet[Label] = frozenset(T1.alternatives.keys())
@@ -482,6 +482,36 @@ def example_4() -> None:
     tmp5_r = LExternalChoice(q, {l3: (SNat(), LExternalChoice(q, {l3: (SNat(), LEnd())}))})
     if merge(tmp5_l, tmp5_r) != None:
         raise ExampleError((example_4, 5))
+
+class TypingEnvironment(object):
+    """Maps expression variables to sorts and process variables to session types.
+    From Section 4.3 "Type System". Used by typechecking and inference."""
+    def __init__(self) -> None:
+        # Expression environment
+        self.e_env: Dict[Variable, Sort] = {}
+        # (Local) Process environment
+        self.p_env: Dict[LVariable, LocalT] = {}
+        # FIXME Add multiparty session to global type
+    def lookup_variable(self, var: 'Variable') -> Sort:
+        return self.e_env[var]
+    def lookup_lvariable(self, lvar: LVariable) -> LocalT:
+        return self.p_env[lvar]
+    def bind_variable(self, var: 'Variable' , srt: Sort) -> 'TypingEnvironment':
+        te = TypingEnvironment()
+        te.e_env = self.e_env.copy()
+        te.e_env[var] = srt
+        te.p_env = self.p_env
+        return te
+    def bind_lvariable(self, lvar: LVariable, ltype: LocalT) -> 'TypingEnvironment':
+        te = TypingEnvironment()
+        te.p_env = self.p_env.copy()
+        te.p_env[lvar] = ltype
+        te.e_env = self.e_env
+        return te
+    def __str__(self) -> str:
+        return repr(self)
+    def __repr__(self) -> str:
+        return f'TypingEnvironment({self.e_env},{self.p_env})'
 
 class Expression(object):
     def __eq__(self, other: object) -> bool:
@@ -622,7 +652,7 @@ class Recv(Process):
         return None
     def comm(self, role: Participant, label: Label, data: Any) -> Process:
         if self.source != role:
-            # The other process is not the one we are waiting on. 
+            # The other process is not the one we are waiting on.
             raise CannotCommunicate()
         if self.label != label:
             # The label is not the one we are waiting on.
@@ -683,7 +713,7 @@ def section_4_1_example_5() -> None:
     # Arrow in the publication becomes GCom class, int and nat are
     # SInt and SNat to avoid collision with Python reserved names. The GEnd is
     # omitted in the example, as stated at page 78
-    # (Section 3 "Synchronous Multiparty Session Calculus"): 
+    # (Section 3 "Synchronous Multiparty Session Calculus"):
     #   "We often omit 0 from the tail of processes"
     # Additionally this example uses infix operators for both internal and
     # external choice (the crossed circle and ampersands), these are
