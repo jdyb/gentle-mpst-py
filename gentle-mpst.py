@@ -520,6 +520,8 @@ class Expression(object):
     def eval(self, env: Dict['Variable', Any]) -> Any:
         # FIXME Replace Any with a value class.
         raise NotImplementedError()
+    def typecheck(self, the_type: Sort, tenv: TypingEnvironment) -> bool:
+        raise NotImplementedError()
 
 class Variable(Expression):
     def __init__(self, name: str):
@@ -536,6 +538,8 @@ class Variable(Expression):
         return hash((Variable, self.vname))
     def eval(self, env: Dict['Variable', Any]) -> Any:
         return env[self]
+    def typecheck(self, the_type: Sort, tenv: TypingEnvironment) -> bool:
+        return tenv.e_env[self] == the_type
 
 class Succ(Expression):
     def __init__(self, arg: Expression):
@@ -546,6 +550,11 @@ class Succ(Expression):
         return f'Succ({repr(self.arg)})'
     def eval(self, env: Dict[Variable, Any]) -> Any:
         return 1 + eval_expr(self.arg, env)
+    def typecheck(self, the_type: Sort, tenv: TypingEnvironment) -> bool:
+        """Typing checking for succ(e) from Table 4."""
+        if the_type != SInt() and the_type != SNat():
+            return False
+        return self.arg.typecheck(the_type, tenv)
 
 class Lit(Expression):
     def __init__(self, num: int):
@@ -556,6 +565,10 @@ class Lit(Expression):
         return f'Lit({self.num})'
     def eval(self, env: Dict[Variable, Any]) -> Any:
         return self.num
+    def typecheck(self, the_type: Sort, tenv: TypingEnvironment) -> bool:
+        """Typing checking for numerical literals from Table 4."""
+        return (the_type == SNat() and self.num >= 0) or \
+                the_type == SInt()
 
 def eval_expr(expr: Expression, env: Dict[Variable, Any]) -> Any:
     if isinstance(expr, int):
