@@ -730,6 +730,11 @@ class Send(Process):
         except CannotCommunicate:
             # Cannot communicate with destination right now, so cannot step.
             return None
+    def typeof(self, tenv: TypingEnvironment) -> LocalT:
+        """Type inference, Table 5 [T-OUT]"""
+        srt = self.expr.typeof(tenv)
+        ltype = self.continuation.typeof(tenv)
+        return LInternalChoice(self.destination, {self.label: (srt, ltype)})
 
 class Recv(Process):
     def __init__(self, source: Participant, label: Label, variable: Variable, continuation: Process):
