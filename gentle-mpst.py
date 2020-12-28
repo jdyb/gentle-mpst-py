@@ -513,12 +513,61 @@ class TypingEnvironment(object):
     def __repr__(self) -> str:
         return f'TypingEnvironment({self.e_env},{self.p_env})'
 
+class Value(object):
+    def __eq__(self, other: Any) -> bool:
+        # Prevent use of the default eq implementation.
+        raise NotImplementedError()
+
+class VNat(Value):
+    def __init__(self, num: int):
+        if num < 0:
+            raise ValueError(num)
+        self.num = num
+    def __eq__(self, other: Any) -> bool:
+        if isinstance(other, VNat):
+            return self.num == other.num
+        else:
+            return False
+    def __str__(self) -> str:
+        return str(self.num)
+    def __repr__(self) -> str:
+        return f'VNat({self.num})'
+    def succ(self) -> 'VNat':
+        return VNat(self.num + 1)
+
+class VInt(Value):
+    def __init__(self, num: int):
+        self.num = num
+    def __eq__(self, other: Any) -> bool:
+        if isinstance(other, VInt):
+            return self.num == other.num
+        else:
+            return False
+    def __str__(self) -> str:
+        return str(self.num)
+    def __repr__(self) -> str:
+        return f'VInt({self.num})'
+    def succ(self) -> 'VInt':
+        return VInt(self.num + 1)
+
+class VBool(Value):
+    def __init__(self, b: bool):
+        self.b = b
+    def __eq__(self, other: Any) -> bool:
+        if isinstance(other, VBool):
+            return self.b == other.b
+        else:
+            return False
+    def __str__(self) -> str:
+        return str(self.b)
+    def __repr__(self) -> str:
+        return f'VBool({self.b})'
+
 class Expression(object):
     def __eq__(self, other: object) -> bool:
         # Prevent use of the default eq implementation.
         raise NotImplementedError()
-    def eval(self, env: Dict['Variable', Any]) -> Any:
-        # FIXME Replace Any with a value class.
+    def eval(self, env: Dict['Variable', Value]) -> Value:
         raise NotImplementedError()
     def typecheck(self, the_type: Sort, tenv: TypingEnvironment) -> bool:
         raise NotImplementedError()
@@ -536,7 +585,7 @@ class Variable(Expression):
         return NotImplemented
     def __hash__(self) -> int:
         return hash((Variable, self.vname))
-    def eval(self, env: Dict['Variable', Any]) -> Any:
+    def eval(self, env: Dict['Variable', Value]) -> Value:
         return env[self]
     def typecheck(self, the_type: Sort, tenv: TypingEnvironment) -> bool:
         return tenv.e_env[self] == the_type
@@ -548,27 +597,47 @@ class Succ(Expression):
         return repr(self)
     def __repr__(self) -> str:
         return f'Succ({repr(self.arg)})'
-    def eval(self, env: Dict[Variable, Any]) -> Any:
-        return 1 + eval_expr(self.arg, env)
+    def eval(self, env: Dict[Variable, Value]) -> Value:
+        tmp = self.arg.eval(env)
+        if isinstance(tmp, VNat):
+            return tmp.succ()
+        elif isinstance(tmp, VInt):
+            return tmp.succ()
+        else:
+            raise ValueError(tmp)
     def typecheck(self, the_type: Sort, tenv: TypingEnvironment) -> bool:
         """Typing checking for succ(e) from Table 4."""
         if the_type != SInt() and the_type != SNat():
             return False
         return self.arg.typecheck(the_type, tenv)
 
-class Lit(Expression):
+class Nat(Expression):
+    def __init__(self, num: int):
+        if num < 0:
+            raise ValueError(num)
+        self.num = num
+    def __str__(self) -> str:
+        return str(self.num)
+    def __repr__(self) -> str:
+        return f'Nat({self.num})'
+    def eval(self, env: Dict[Variable, Value]) -> Value:
+        return VNat(self.num)
+    def typecheck(self, the_type: Sort, tenv: TypingEnvironment) -> bool:
+        """Typing checking for numerical literals from Table 4."""
+        return the_type == SNat()
+
+class Int(Expression):
     def __init__(self, num: int):
         self.num = num
     def __str__(self) -> str:
         return str(self.num)
     def __repr__(self) -> str:
-        return f'Lit({self.num})'
-    def eval(self, env: Dict[Variable, Any]) -> Any:
-        return self.num
+        return f'Int({self.num})'
+    def eval(self, env: Dict[Variable, Value]) -> Value:
+        return VInt(self.num)
     def typecheck(self, the_type: Sort, tenv: TypingEnvironment) -> bool:
         """Typing checking for numerical literals from Table 4."""
-        return (the_type == SNat() and self.num >= 0) or \
-                the_type == SInt()
+        return the_type == SInt()
 
 class Choice(Expression):
     """Nondeterministic choice in an expression from section 3, syntax."""
@@ -578,19 +647,12 @@ class Choice(Expression):
         return f'{self.e1}⊕{self.e2})'
     def __repr__(self) -> str:
         return f'Either({self.e1}, {self.e2})'
-    def eval(self, env: Dict[Variable, Any]) -> Any:
+    def eval(self, env: Dict[Variable, Value]) -> Value:
         # FIXME What to do here?
         raise NotImplementedError()
     def typecheck(self, the_type: Sort, tenv: TypingEnvironment) -> bool:
         return self.e1.typecheck(the_type, tenv) and \
                 self.e2.typecheck(the_type, tenv)
-
-def eval_expr(expr: Expression, env: Dict[Variable, Any]) -> Any:
-    if isinstance(expr, int):
-        # FIXME Why is this required? We already have Lit?
-        return expr
-    else:
-        return expr.eval(env)
 
 class Process(object):
     def __init__(self) -> None:
@@ -655,7 +717,7 @@ class Send(Process):
         return f'Send({self.destination}, {self.label}, {self.expr}, {self.continuation})'
     def step(self, role: Participant, state0: MState) -> Optional[MState]:
         proc_dst = state0.participants[self.destination]
-        data = eval_expr(self.expr, self.environment)
+        data = self.expr.eval(self.environment)
         try:
             proc_dst = proc_dst.comm(role, self.label, data)
             state1 = state0.replace(self.destination, proc_dst)
@@ -721,9 +783,9 @@ def example_2() -> None:
             Participant('Bob'), Participant('Alice'), Participant('Carol')
     l1, l2, l3, l4 = Label(1), Label(2), Label(3), Label(4)
     x = Variable('x')
-    PAlice = Send(Bob, l1, Lit(50), Recv(Carol, l3, x, Inaction()))
-    PBob = ExtChoice(Recv(Alice, l1, x, Send(Carol, l2, Lit(100), Inaction())),
-            Recv(Alice, l4, x, Send(Carol, l2, Lit(2), Inaction())))
+    PAlice = Send(Bob, l1, Nat(50), Recv(Carol, l3, x, Inaction()))
+    PBob = ExtChoice(Recv(Alice, l1, x, Send(Carol, l2, Nat(100), Inaction())),
+            Recv(Alice, l4, x, Send(Carol, l2, Nat(2), Inaction())))
     PCarol = Recv(Bob, l2, x, Send(Alice, l3, Succ(x), Inaction()))
     state = MState({Alice: PAlice, Bob: PBob, Carol: PCarol})
     while True:
@@ -732,7 +794,7 @@ def example_2() -> None:
             state = tmp
         else:
             break
-    if state.participants[Alice].environment[x] != 101:
+    if state.participants[Alice].environment[x] != VNat(101):
         raise ExampleError(example_2)
 
 def section_4_1_example_5() -> None:
