@@ -111,6 +111,8 @@ class TestSubsorts(unittest.TestCase):
         self.assertFalse(SInt().is_subsort(SBool()))
     def test_sint_snat(self) -> None:
         self.assertFalse(SInt().is_subsort(SNat()))
+    def test_snat_sint(self) -> None:
+        self.assertTrue(SNat().is_subsort(SInt()))
 
 # The subclasses of Local are from section "4.1 Types and Projections" and
 # "Definition 3 (Local Session Types)"
@@ -234,6 +236,13 @@ class LRec(LocalT):
 
     def __hash__(self) -> int:
         return hash((self.ltvariable, self.local_type))
+
+class TestParticipantSet(unittest.TestCase):
+    def test_external_choice_participants(self):
+        Alice = Participant('Alice')
+        l1 = Label(1)
+        ltype = LExternalChoice(Alice, {l1 : (SInt(), LEnd())})
+        self.assertEqual(ltype.pt(), set([Alice]))
 
 # The subclasses of GlobalT are from section "4.1 Types and Projections"
 # definition 2.
