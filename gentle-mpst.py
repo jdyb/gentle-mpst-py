@@ -238,7 +238,7 @@ class LRec(LocalT):
         return hash((self.ltvariable, self.local_type))
 
 class TestParticipantSet(unittest.TestCase):
-    def test_external_choice_participants(self):
+    def test_external_choice_participants(self) -> None:
         Alice = Participant('Alice')
         l1 = Label(1)
         ltype = LExternalChoice(Alice, {l1 : (SInt(), LEnd())})
@@ -558,6 +558,8 @@ class Expression(object):
         raise NotImplementedError()
     def typecheck(self, the_type: Sort, tenv: TypingEnvironment) -> bool:
         raise NotImplementedError()
+    def typeof(self, tenv: TypingEnvironment) -> Sort:
+        raise NotImplementedError()
 
 class Variable(Expression):
     def __init__(self, name: str):
@@ -660,6 +662,8 @@ class Process(object):
         raise NotImplementedError()
     def comm(self, role: Participant, label: Label, data: Any) -> 'Process':
         raise CannotCommunicate()
+    def typeof(self, tenv: TypingEnvironment) -> LocalT:
+        raise NotImplementedError()
 
 class MState(object):
     def __init__(self, participants: Dict[Participant, Process]):
@@ -732,8 +736,8 @@ class Send(Process):
             return None
     def typeof(self, tenv: TypingEnvironment) -> LocalT:
         """Type inference, Table 5 [T-OUT]"""
-        srt = self.expr.typeof(tenv)
-        ltype = self.continuation.typeof(tenv)
+        srt: Sort = self.expr.typeof(tenv)
+        ltype: LocalT = self.continuation.typeof(tenv)
         return LInternalChoice(self.destination, {self.label: (srt, ltype)})
 
 class ExtChoice(Process):
