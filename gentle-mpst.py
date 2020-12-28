@@ -570,8 +570,24 @@ class Lit(Expression):
         return (the_type == SNat() and self.num >= 0) or \
                 the_type == SInt()
 
+class Choice(Expression):
+    """Nondeterministic choice in an expression from section 3, syntax."""
+    def __init__(self, e1: Expression, e2: Expression):
+        self.e1, self.e2 = e1, e2
+    def __str__(self) -> str:
+        return f'{self.e1}⊕{self.e2})'
+    def __repr__(self) -> str:
+        return f'Either({self.e1}, {self.e2})'
+    def eval(self, env: Dict[Variable, Any]) -> Any:
+        # FIXME What to do here?
+        raise NotImplementedError()
+    def typecheck(self, the_type: Sort, tenv: TypingEnvironment) -> bool:
+        return self.e1.typecheck(the_type, tenv) and \
+                self.e2.typecheck(the_type, tenv)
+
 def eval_expr(expr: Expression, env: Dict[Variable, Any]) -> Any:
     if isinstance(expr, int):
+        # FIXME Why is this required? We already have Lit?
         return expr
     else:
         return expr.eval(env)
