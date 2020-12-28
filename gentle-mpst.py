@@ -736,51 +736,35 @@ class Send(Process):
         ltype = self.continuation.typeof(tenv)
         return LInternalChoice(self.destination, {self.label: (srt, ltype)})
 
-class Recv(Process):
-    def __init__(self, source: Participant, label: Label, variable: Variable, continuation: Process):
-        Process.__init__(self)
-        self.source, self.label, self.variable, self.continuation = \
-                source, label, variable, continuation
-    def __str__(self) -> str:
-        return repr(self)
-    def __repr__(self) -> str:
-        return f'Recv({self.source}, {self.label}, {self.variable}, {self.continuation})'
-    def step(self, role: Participant, state: MState) -> None:
-        # Waiting for message, cannot step by ourselves.
-        return None
-    def comm(self, role: Participant, label: Label, data: Any) -> Process:
-        if self.source != role:
-            # The other process is not the one we are waiting on.
-            raise CannotCommunicate()
-        if self.label != label:
-            # The label is not the one we are waiting on.
-            raise CannotCommunicate()
-        # Participant and Label matches, we will communicate (receive message).
-        # FIXME Eeew. Do not mutate please.
-        self.continuation.environment[self.variable] = data
-        return self.continuation
-
 class ExtChoice(Process):
-    """An external choice."""
-    def __init__(self, *alternatives: Recv):
+    """Synchronous receive from section 3, syntax of P."""
+    def __init__(self, source: Participant, alternatives: Dict[Label, Tuple[Variable, Process]]):
         Process.__init__(self)
         """The alternatives must be a nonempty list of Recv processes."""
+        self.source = source
         # FIXME Enforce nonemptyness
         self.alternatives = alternatives
     def __str__(self) -> str:
         return repr(self)
     def __repr__(self) -> str:
-        return f'ExtChoice({repr(self.alternatives)})'
+        return f'ExtChoice({repr(self.source)}, {repr(self.alternatives)})'
     def step(self, role: Participant, state: MState) -> None:
         # We are waiting for another process, cannot step by ourselves.
         return None
     def comm(self, role: Participant, label: Label, data: Any) -> Process:
+        # Check that source participant matches
+        if self.source != role:
+            # The other process is not the one we are waiting on.
+            raise CannotCommunicate()
         # Try each alternative and see if one of them will communicate.
-        for proc in self.alternatives:
-            try:
-                return proc.comm(role, label, data)
-            except CannotCommunicate:
-                # No, try the other alternatives.
+        for alt_label in self.alternatives:
+            variable, continuation = self.alternatives[label]
+            if alt_label == label:
+                # Participant and Label matches, we will communicate (receive message).
+                # FIXME Eeew. Do not mutate please.
+                continuation.environment[variable] = data
+                return continuation
+            else:
                 continue
         # No alternative can communicate.
         raise CannotCommunicate()
@@ -791,10 +775,11 @@ class TestExamples(unittest.TestCase):
                 Participant('Bob'), Participant('Alice'), Participant('Carol')
         l1, l2, l3, l4 = Label(1), Label(2), Label(3), Label(4)
         x = Variable('x')
-        PAlice = Send(Bob, l1, Nat(50), Recv(Carol, l3, x, Inaction()))
-        PBob = ExtChoice(Recv(Alice, l1, x, Send(Carol, l2, Nat(100), Inaction())),
-                Recv(Alice, l4, x, Send(Carol, l2, Nat(2), Inaction())))
-        PCarol = Recv(Bob, l2, x, Send(Alice, l3, Succ(x), Inaction()))
+        PAlice = Send(Bob, l1, Nat(50), ExtChoice(Carol, {l3: (x, Inaction())}))
+        PBob = ExtChoice(Alice,
+                {l1: (x, Send(Carol, l2, Nat(100), Inaction())),
+                    l4: (x, Send(Carol, l2, Nat(2), Inaction()))})
+        PCarol = ExtChoice(Bob, {l2: (x, Send(Alice, l3, Succ(x), Inaction()))})
         state = MState({Alice: PAlice, Bob: PBob, Carol: PCarol})
         while True:
             tmp = state.step()
