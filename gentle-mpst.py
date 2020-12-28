@@ -700,6 +700,9 @@ class Inaction(Process):
     def step(self, role: Participant, state: MState) -> Optional[MState]:
         # Nothing to step
         return None
+    def typeof(self, tenv: TypingEnvironment) -> LocalT:
+        """Type inference, Table 5 [T-0]"""
+        return LEnd()
 
 class CannotCommunicate(Exception):
     pass # Intentionally empty exception.
