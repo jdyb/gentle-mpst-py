@@ -639,6 +639,18 @@ class Int(Expression):
         """Typing checking for numerical literals from Table 4."""
         return the_type == SInt()
 
+class Bool(Expression):
+    def __init__(self, value: bool):
+        self.value = value
+    def __str__(self) -> str:
+        return str(self.value)
+    def __repr__(self) -> str:
+        return f'Bool({self.value})'
+    def eval(self, env: Dict[Variable, Value]) -> Value:
+        return VBool(self.value)
+    def typecheck(self, the_type: Sort, tenv: TypingEnvironment) -> bool:
+        return the_type == SBool()
+
 class Choice(Expression):
     """Nondeterministic choice in an expression from section 3, syntax."""
     def __init__(self, e1: Expression, e2: Expression):
