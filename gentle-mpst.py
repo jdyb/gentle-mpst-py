@@ -21,6 +21,7 @@
 # SOFTWARE.
 
 from typing import Dict, Tuple, Set, List, FrozenSet, Optional, Any
+import unittest
 
 class ExampleError(Exception):
     """This is raised if an example does not produce the expected results"""
@@ -104,6 +105,12 @@ class SBool(Sort):
     def is_subsort(self, other: Sort) -> bool:
         # SBool is not a subsort of any other sort.
         return isinstance(other, SBool)
+
+class TestSubsorts(unittest.TestCase):
+    def test_sint_sbool(self) -> None:
+        self.assertFalse(SInt().is_subsort(SBool()))
+    def test_sint_snat(self) -> None:
+        self.assertFalse(SInt().is_subsort(SNat()))
 
 # The subclasses of Local are from section "4.1 Types and Projections" and
 # "Definition 3 (Local Session Types)"
@@ -454,35 +461,6 @@ def merge(T1: LocalT, T2: LocalT) -> Optional[LocalT]:
     else:
         return None
 
-def example_4() -> None:
-    # Participants and labels used in the example.
-    p, q = Participant('p'), Participant('q')
-    l, l3, l4, l5 = Label(0), Label(3), Label(4), Label(5)
-    # First line in example.
-    tst1 = LInternalChoice(q,{l:(SNat(),LEnd())})
-    if merge(tst1, tst1) != tst1:
-        raise ExampleError((example_4, 1))
-    # Second line in example (undefined due to different participants).
-    if merge(LInternalChoice(p, {l: (SNat(), LEnd())}),
-            LInternalChoice(q,{l: (SNat(), LEnd())})) != None:
-        raise ExampleError((example_4, 2))
-    # Third line in example (undefined due to outputs with different labels)
-    if merge(LInternalChoice(q,{l3:(SNat(), LEnd())}),
-            LInternalChoice(q,{l4:(SNat(), LEnd())})) != None:
-        raise ExampleError((example_4, 3))
-    # Fourth line in example
-    tmp4_l = LExternalChoice(q, {l3: (SInt(), LEnd()), l5: (SNat(), LEnd())})
-    tmp4_r = LExternalChoice(q, {l4: (SInt(), LEnd()), l5: (SNat(), LEnd())})
-    tmp4 = LExternalChoice(q, {l3: (SInt(), LEnd()), l4: (SInt(), LEnd()),
-        l5: (SNat(), LEnd())})
-    if merge(tmp4_l, tmp4_r) != tmp4:
-        raise ExampleError((example_4, 4))
-    # Fifth line in example
-    tmp5_l = LExternalChoice(q, {l3: (SNat(), LEnd())})
-    tmp5_r = LExternalChoice(q, {l3: (SNat(), LExternalChoice(q, {l3: (SNat(), LEnd())}))})
-    if merge(tmp5_l, tmp5_r) != None:
-        raise ExampleError((example_4, 5))
-
 class TypingEnvironment(object):
     """Maps expression variables to sorts and process variables to session types.
     From Section 4.3 "Type System". Used by typechecking and inference."""
@@ -790,111 +768,127 @@ class ExtChoice(Process):
         # No alternative can communicate.
         raise CannotCommunicate()
 
-def example_2() -> None:
-    Bob, Alice, Carol = \
-            Participant('Bob'), Participant('Alice'), Participant('Carol')
-    l1, l2, l3, l4 = Label(1), Label(2), Label(3), Label(4)
-    x = Variable('x')
-    PAlice = Send(Bob, l1, Nat(50), Recv(Carol, l3, x, Inaction()))
-    PBob = ExtChoice(Recv(Alice, l1, x, Send(Carol, l2, Nat(100), Inaction())),
-            Recv(Alice, l4, x, Send(Carol, l2, Nat(2), Inaction())))
-    PCarol = Recv(Bob, l2, x, Send(Alice, l3, Succ(x), Inaction()))
-    state = MState({Alice: PAlice, Bob: PBob, Carol: PCarol})
-    while True:
-        tmp = state.step()
-        if tmp:
-            state = tmp
-        else:
-            break
-    if state.participants[Alice].environment[x] != VNat(101):
-        raise ExampleError(example_2)
+class TestExamples(unittest.TestCase):
+    def test_example_2(self) -> None:
+        Bob, Alice, Carol = \
+                Participant('Bob'), Participant('Alice'), Participant('Carol')
+        l1, l2, l3, l4 = Label(1), Label(2), Label(3), Label(4)
+        x = Variable('x')
+        PAlice = Send(Bob, l1, Nat(50), Recv(Carol, l3, x, Inaction()))
+        PBob = ExtChoice(Recv(Alice, l1, x, Send(Carol, l2, Nat(100), Inaction())),
+                Recv(Alice, l4, x, Send(Carol, l2, Nat(2), Inaction())))
+        PCarol = Recv(Bob, l2, x, Send(Alice, l3, Succ(x), Inaction()))
+        state = MState({Alice: PAlice, Bob: PBob, Carol: PCarol})
+        while True:
+            tmp = state.step()
+            if tmp:
+                state = tmp
+            else:
+                break
+        self.assertEqual(state.participants[Alice].environment[x], VNat(101))
 
-def section_4_1_example_5() -> None:
-    """Section 4.1 "Types and Projections", Example 5"""
-    # Notes about this example
-    #
-    # Arrow in the publication becomes GCom class, int and nat are
-    # SInt and SNat to avoid collision with Python reserved names. The GEnd is
-    # omitted in the example, as stated at page 78
-    # (Section 3 "Synchronous Multiparty Session Calculus"):
-    #   "We often omit 0 from the tail of processes"
-    # Additionally this example uses infix operators for both internal and
-    # external choice (the crossed circle and ampersands), these are
-    # implemented as LInternalChoice and LExternalChoice constructions.
-    #
-    # Define the participants used in this example.
-    q, p, r = Participant('q'), Participant('p'), Participant('r')
-    # Define the labels used in this example.
-    l1, l2, l3, l4, l5 = \
-            Label(1), Label(2), Label(3), Label(4), Label(5)
-    # Define the global type
-    G1 = GCom(q, r, {l3: (SInt(), GEnd()), l5: (SNat(), GEnd())})
-    G2 = GCom(q, r, {l4: (SInt(), GEnd()), l5: (SNat(), GEnd())})
-    G = GCom(p, q, {l1: (SNat(), G1), l2: (SBool(), G2)})
-    # Local types of participants q, p and r
-    Lq, Lp, Lr = G.project(q), G.project(p), G.project(r)
-    # Expected local type of participant p
-    Lp_ = LInternalChoice(q, {l1: (SNat(), LEnd()), l2: (SBool(), LEnd())})
-    # Expected local type of participant q
-    Lq_0 = LInternalChoice(r, {l3: (SInt(), LEnd()), l5: (SNat(), LEnd())})
-    Lq_1 = LInternalChoice(r, {l5: (SNat(), LEnd()), l4: (SInt(), LEnd())})
-    Lq_ = LExternalChoice(p, {l1: (SNat(), Lq_0), l2: (SBool(), Lq_1)})
-    # FIXME BUG Lq has LExternalChoice as choices
-    #   (Lq_0 and Lq_1 does not match).
-    # Expected local type of participant r
-    Lr_ = LExternalChoice(q, {l3: (SInt(), LEnd()), l4: (SInt(), LEnd()),
-        l5: (SNat(), LEnd())})
-    # Check that projected local types match the expected local types, to make
-    # sure this example actually works.
-    if Lq != Lq_ or Lp != Lp_ or Lr != Lr_:
-        raise ExampleError((section_4_1_example_5, Lq, Lp, Lr))
+    def test_example_4(self) -> None:
+        # Participants and labels used in the example.
+        p, q = Participant('p'), Participant('q')
+        l, l3, l4, l5 = Label(0), Label(3), Label(4), Label(5)
+        # First line in example.
+        tst1 = LInternalChoice(q,{l:(SNat(),LEnd())})
+        self.assertEqual(merge(tst1, tst1), tst1)
+        # Second line in example (undefined due to different participants).
+        self.assertIsNone(merge(LInternalChoice(p, {l: (SNat(), LEnd())}),
+            LInternalChoice(q,{l: (SNat(), LEnd())})))
+        # Third line in example (undefined due to outputs with different labels)
+        self.assertIsNone(merge(LInternalChoice(q,{l3:(SNat(), LEnd())}),
+                LInternalChoice(q,{l4:(SNat(), LEnd())})))
+        # Fourth line in example
+        tmp4_l = LExternalChoice(q, {l3: (SInt(), LEnd()), l5: (SNat(), LEnd())})
+        tmp4_r = LExternalChoice(q, {l4: (SInt(), LEnd()), l5: (SNat(), LEnd())})
+        tmp4 = LExternalChoice(q, {l3: (SInt(), LEnd()), l4: (SInt(), LEnd()),
+            l5: (SNat(), LEnd())})
+        self.assertEqual(merge(tmp4_l, tmp4_r), tmp4)
+        # Fifth line in example
+        tmp5_l = LExternalChoice(q, {l3: (SNat(), LEnd())})
+        tmp5_r = LExternalChoice(q, {l3: (SNat(), LExternalChoice(q, {l3: (SNat(), LEnd())}))})
+        self.assertIsNone(merge(tmp5_l, tmp5_r))
 
-def example_6_1() -> None:
-    # First part of example 6
-    l1, l2, l3, l4 = Label(1), Label(2), Label(3), Label(4)
-    p, q, r = Participant('p'), Participant('q'), Participant('r')
-    G1 = GCom(r, q, {l3: (SNat(), GEnd())})
-    G2 = GCom(r, q, {l4: (SNat(), GEnd())})
-    G = GCom(p, q, {l1: (SNat(), G1), l2: (SBool(), G2)})
+    def test_section_4_1_example_5(self) -> None:
+        """Section 4.1 "Types and Projections", Example 5"""
+        # Notes about this example
+        #
+        # Arrow in the publication becomes GCom class, int and nat are
+        # SInt and SNat to avoid collision with Python reserved names. The GEnd is
+        # omitted in the example, as stated at page 78
+        # (Section 3 "Synchronous Multiparty Session Calculus"):
+        #   "We often omit 0 from the tail of processes"
+        # Additionally this example uses infix operators for both internal and
+        # external choice (the crossed circle and ampersands), these are
+        # implemented as LInternalChoice and LExternalChoice constructions.
+        #
+        # Define the participants used in this example.
+        q, p, r = Participant('q'), Participant('p'), Participant('r')
+        # Define the labels used in this example.
+        l1, l2, l3, l4, l5 = \
+                Label(1), Label(2), Label(3), Label(4), Label(5)
+        # Define the global type
+        G1 = GCom(q, r, {l3: (SInt(), GEnd()), l5: (SNat(), GEnd())})
+        G2 = GCom(q, r, {l4: (SInt(), GEnd()), l5: (SNat(), GEnd())})
+        G = GCom(p, q, {l1: (SNat(), G1), l2: (SBool(), G2)})
+        # Local types of participants q, p and r
+        Lq, Lp, Lr = G.project(q), G.project(p), G.project(r)
+        # Expected local type of participant p
+        Lp_ = LInternalChoice(q, {l1: (SNat(), LEnd()), l2: (SBool(), LEnd())})
+        # Expected local type of participant q
+        Lq_0 = LInternalChoice(r, {l3: (SInt(), LEnd()), l5: (SNat(), LEnd())})
+        Lq_1 = LInternalChoice(r, {l5: (SNat(), LEnd()), l4: (SInt(), LEnd())})
+        Lq_ = LExternalChoice(p, {l1: (SNat(), Lq_0), l2: (SBool(), Lq_1)})
+        # FIXME BUG Lq has LExternalChoice as choices
+        #   (Lq_0 and Lq_1 does not match).
+        # Expected local type of participant r
+        Lr_ = LExternalChoice(q, {l3: (SInt(), LEnd()), l4: (SInt(), LEnd()),
+            l5: (SNat(), LEnd())})
+        # Check that projected local types match the expected local types, to make
+        # sure this example actually works.
+        self.assertEqual(Lq, Lq_)
+        self.assertEqual(Lp, Lp_)
+        self.assertEqual(Lr, Lr_)
 
-    Gp = LInternalChoice(q, {l1: (SNat(), LEnd()), l2: (SBool(), LEnd())})
-    Gq = LExternalChoice(p, {
-        l1: (SNat(), LExternalChoice(r, {l3: (SNat(), LEnd())})),
-        l2: (SBool(), LExternalChoice(r, {l4: (SNat(), LEnd())}))
-        })
-    if G.project(p) != Gp:
-        raise ExampleError((example_6_1, 1))
-    if G.project(q) != Gq:
-        raise ExampleError((example_6_1, 2))
-    if G.project(r) != None:
-        raise ExampleError((example_6_1, 3))
+    def test_example_6_1(self) -> None:
+        # First part of example 6
+        l1, l2, l3, l4 = Label(1), Label(2), Label(3), Label(4)
+        p, q, r = Participant('p'), Participant('q'), Participant('r')
+        G1 = GCom(r, q, {l3: (SNat(), GEnd())})
+        G2 = GCom(r, q, {l4: (SNat(), GEnd())})
+        G = GCom(p, q, {l1: (SNat(), G1), l2: (SBool(), G2)})
 
-def example_6_2() -> None:
-    # Second part of example 6
-    l1, l2, l3, l4 = Label(1), Label(2), Label(3), Label(4)
-    p, q, r = Participant('p'), Participant('q'), Participant('r')
-    G1 = GCom(q, r, {l3: (SNat(), GEnd())})
-    G2 = GCom(q, r, {l3: (SNat(), GCom(q, r, {l3: (SNat(), GEnd())}))})
-    G = GCom(p, q, {l1: (SNat(), G1), l2: (SBool(), G2)})
+        Gp = LInternalChoice(q, {l1: (SNat(), LEnd()), l2: (SBool(), LEnd())})
+        Gq = LExternalChoice(p, {
+            l1: (SNat(), LExternalChoice(r, {l3: (SNat(), LEnd())})),
+            l2: (SBool(), LExternalChoice(r, {l4: (SNat(), LEnd())}))
+            })
+        self.assertEqual(G.project(p), Gp)
+        self.assertEqual(G.project(q), Gq)
+        self.assertIsNone(G.project(r))
 
-    Gp = LInternalChoice(q, {l1: (SNat(), LEnd()), l2: (SBool(), LEnd())})
-    Gq = LExternalChoice(p, {
-        # p?l1(nat).r!l3(nat) 
-        l1: (SNat(), LInternalChoice(r, {l3: (SNat(), LEnd())})),
-        # p?l2(bool).r!l3(nat).r!l3(nat)
-        l2: (SBool(), LInternalChoice(r, {l3: (SNat(), LInternalChoice(r, {l3: (SNat(), LEnd())}))}))
-        })
-    if G.project(p) != Gp:
-        raise ExampleError((example_6_2, 1))
-    if G.project(q) != Gq:
-        raise ExampleError((example_6_2, 2))
-    if G.project(r) != None:
-        raise ExampleError((example_6_2, 3))
+    def test_example_6_2(self) -> None:
+        # Second part of example 6
+        l1, l2, l3, l4 = Label(1), Label(2), Label(3), Label(4)
+        p, q, r = Participant('p'), Participant('q'), Participant('r')
+        G1 = GCom(q, r, {l3: (SNat(), GEnd())})
+        G2 = GCom(q, r, {l3: (SNat(), GCom(q, r, {l3: (SNat(), GEnd())}))})
+        G = GCom(p, q, {l1: (SNat(), G1), l2: (SBool(), G2)})
+
+        Gp = LInternalChoice(q, {l1: (SNat(), LEnd()), l2: (SBool(), LEnd())})
+        Gq = LExternalChoice(p, {
+            # p?l1(nat).r!l3(nat)
+            l1: (SNat(), LInternalChoice(r, {l3: (SNat(), LEnd())})),
+            # p?l2(bool).r!l3(nat).r!l3(nat)
+            l2: (SBool(), LInternalChoice(r,
+                {l3: (SNat(), LInternalChoice(r, {l3: (SNat(), LEnd())}))}))
+            })
+        self.assertEqual(G.project(p), Gp)
+        self.assertEqual(G.project(q), Gq)
+        self.assertIsNone(G.project(r))
 
 if __name__ == "__main__":
-    example_2()
-    example_4()
-    section_4_1_example_5()
-    example_6_1()
-    example_6_2()
+    unittest.main()
 
