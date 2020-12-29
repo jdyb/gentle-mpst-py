@@ -660,6 +660,8 @@ class Process(object):
         raise NotImplementedError()
     def comm(self, role: Participant, label: Label, data: Any) -> 'Process':
         raise CannotCommunicate()
+    def typecheck(self, the_type: LocalT, tenv: TypingEnvironment) -> bool:
+        raise NotImplementedError()
 
 class MState(object):
     def __init__(self, participants: Dict[Participant, Process]):
@@ -700,6 +702,8 @@ class Inaction(Process):
     def step(self, role: Participant, state: MState) -> Optional[MState]:
         # Nothing to step
         return None
+    def typecheck(self, the_type: LocalT, tenv: TypingEnvironment) -> bool:
+        return the_type == LEnd()
 
 class CannotCommunicate(Exception):
     pass # Intentionally empty exception.
@@ -727,6 +731,24 @@ class Send(Process):
         except CannotCommunicate:
             # Cannot communicate with destination right now, so cannot step.
             return None
+    def typecheck(self, the_type: LocalT, tenv: TypingEnvironment) -> bool:
+        """Typing checking from Table 4, [T-OUT]."""
+        # An output process only ever types to external choice.
+        if not isinstance(the_type, LExternalChoice):
+            return False
+        # The destination participant in the expression and type must match.
+        if self.destination != the_type.p:
+            return False
+        # Get the expected sort and local type for the expression and process.
+        tsort, ltype = the_type.alternatives[self.label]
+        # Check that the expression is of the expected sort.
+        if not self.expr.typecheck(tsort, tenv):
+            return False
+        # Check that the continuation process is of the expected local type.
+        if not self.continuation.typecheck(ltype, tenv):
+            return False
+        # Typecheck completed.
+        return True
 
 class ExtChoice(Process):
     """Synchronous receive from section 3, syntax of P."""
