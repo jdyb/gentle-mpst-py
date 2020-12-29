@@ -558,8 +558,6 @@ class Expression(object):
         raise NotImplementedError()
     def typecheck(self, the_type: Sort, tenv: TypingEnvironment) -> bool:
         raise NotImplementedError()
-    def typeof(self, tenv: TypingEnvironment) -> Sort:
-        raise NotImplementedError()
 
 class Variable(Expression):
     def __init__(self, name: str):
@@ -662,8 +660,6 @@ class Process(object):
         raise NotImplementedError()
     def comm(self, role: Participant, label: Label, data: Any) -> 'Process':
         raise CannotCommunicate()
-    def typeof(self, tenv: TypingEnvironment) -> LocalT:
-        raise NotImplementedError()
 
 class MState(object):
     def __init__(self, participants: Dict[Participant, Process]):
@@ -704,9 +700,6 @@ class Inaction(Process):
     def step(self, role: Participant, state: MState) -> Optional[MState]:
         # Nothing to step
         return None
-    def typeof(self, tenv: TypingEnvironment) -> LocalT:
-        """Type inference, Table 5 [T-0]"""
-        return LEnd()
 
 class CannotCommunicate(Exception):
     pass # Intentionally empty exception.
@@ -734,11 +727,6 @@ class Send(Process):
         except CannotCommunicate:
             # Cannot communicate with destination right now, so cannot step.
             return None
-    def typeof(self, tenv: TypingEnvironment) -> LocalT:
-        """Type inference, Table 5 [T-OUT]"""
-        srt: Sort = self.expr.typeof(tenv)
-        ltype: LocalT = self.continuation.typeof(tenv)
-        return LInternalChoice(self.destination, {self.label: (srt, ltype)})
 
 class ExtChoice(Process):
     """Synchronous receive from section 3, syntax of P."""
