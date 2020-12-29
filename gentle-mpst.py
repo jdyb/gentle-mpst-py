@@ -782,6 +782,41 @@ class ExtChoice(Process):
                 continue
         # No alternative can communicate.
         raise CannotCommunicate()
+    def typecheck(self, the_type: LocalT, tenv: TypingEnvironment) -> bool:
+        if not isinstance(the_type, LExternalChoice):
+            return False
+        if self.source != the_type.p:
+            return False
+        if self.alternatives.keys() != the_type.alternatives.keys():
+            return False
+        for label in self.alternatives:
+            var, proc = self.alternatives[label]
+            tsort, ltype = the_type.alternatives[label]
+            tenv1 = tenv.bind_variable(var, tsort)
+            if not proc.typecheck(ltype, tenv1):
+                return False
+        return True
+
+class TestExtChoiceTypcheck(unittest.TestCase):
+    alice = Participant('Alice')
+    l0, l1 = Label(0), Label(1)
+    x = Variable('x')
+    def test_simple_call(self) -> None:
+        proc = ExtChoice(self.alice, {self.l0: (self.x, Inaction())})
+        ltype = LExternalChoice(self.alice, {self.l0: (SInt(), LEnd())})
+        self.assertTrue(proc.typecheck(ltype, TypingEnvironment()))
+    def test_label_mismatch(self) -> None:
+        proc = ExtChoice(self.alice, {self.l0: (self.x, Inaction())})
+        ltype = LExternalChoice(self.alice, {self.l1: (SInt(), LEnd())})
+        self.assertFalse(proc.typecheck(ltype, TypingEnvironment()))
+    def test_extra_type_label(self) -> None:
+        proc = ExtChoice(self.alice, {self.l0: (self.x, Inaction())})
+        ltype = LExternalChoice(self.alice, {self.l0: (SInt(), LEnd()), self.l1: (SInt(), LEnd())})
+        self.assertFalse(proc.typecheck(ltype, TypingEnvironment()))
+    def test_extra_process_label(self) -> None:
+        proc = ExtChoice(self.alice, {self.l0: (self.x, Inaction()), self.l1: (self.x, Inaction())})
+        ltype = LExternalChoice(self.alice, {self.l0: (SInt(), LEnd())})
+        self.assertFalse(proc.typecheck(ltype, TypingEnvironment()))
 
 class TestExamples(unittest.TestCase):
     def test_example_2(self) -> None:
