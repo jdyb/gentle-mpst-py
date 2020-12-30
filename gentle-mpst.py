@@ -656,7 +656,8 @@ class Choice(Expression):
 
 class Process(object):
     def __init__(self) -> None:
-        self.environment: Dict[EVariable, Any] = {}
+        self.expr_environment: Dict[EVariable, Any] = {}
+        self.proc_environment: Dict[PVariable, 'Process'] = {}
     def step(self, role: Participant, state: 'MState') -> Optional['MState']:
         raise NotImplementedError()
     def comm(self, role: Participant, label: Label, data: Any) -> 'Process':
@@ -699,7 +700,7 @@ class Inaction(Process):
     def __str__(self) -> str:
         return repr(self)
     def __repr__(self) -> str:
-        return f'Inaction({repr(self.environment)})'
+        return f'Inaction({repr(self.expr_environment)})'
     def step(self, role: Participant, state: MState) -> Optional[MState]:
         # Nothing to step
         return None
@@ -721,12 +722,12 @@ class Send(Process):
         return f'Send({self.destination}, {self.label}, {self.expr}, {self.continuation})'
     def step(self, role: Participant, state0: MState) -> Optional[MState]:
         proc_dst = state0.participants[self.destination]
-        data = self.expr.eval(self.environment)
+        data = self.expr.eval(self.expr_environment)
         try:
             proc_dst = proc_dst.comm(role, self.label, data)
             state1 = state0.replace(self.destination, proc_dst)
             # FIXME Eeeek. Do not mutate, plz.
-            self.continuation.environment.update(self.environment)
+            self.continuation.expr_environment.update(self.expr_environment)
             state2 = state1.replace(role, self.continuation)
             return state2
         except CannotCommunicate:
@@ -805,7 +806,7 @@ class ExtChoice(Process):
             if alt_label == label:
                 # Participant and Label matches, we will communicate (receive message).
                 # FIXME Eeew. Do not mutate please.
-                continuation.environment[variable] = data
+                continuation.expr_environment[variable] = data
                 return continuation
             else:
                 continue
@@ -865,7 +866,7 @@ class TestExamples(unittest.TestCase):
                 state = tmp
             else:
                 break
-        self.assertEqual(state.participants[Alice].environment[x], VNat(101))
+        self.assertEqual(state.participants[Alice].expr_environment[x], VNat(101))
 
     def test_example_4(self) -> None:
         # Participants and labels used in the example.
