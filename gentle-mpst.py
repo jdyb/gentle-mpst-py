@@ -475,15 +475,15 @@ class TypingEnvironment(object):
     From Section 4.3 "Type System". Used by typechecking and inference."""
     def __init__(self) -> None:
         # Expression environment
-        self.e_env: Dict[Variable, Sort] = {}
+        self.e_env: Dict[EVariable, Sort] = {}
         # (Local) Process environment
         self.p_env: Dict[LVariable, LocalT] = {}
         # FIXME Add multiparty session to global type
-    def lookup_variable(self, var: 'Variable') -> Sort:
+    def lookup_variable(self, var: 'EVariable') -> Sort:
         return self.e_env[var]
     def lookup_lvariable(self, lvar: LVariable) -> LocalT:
         return self.p_env[lvar]
-    def bind_variable(self, var: 'Variable' , srt: Sort) -> 'TypingEnvironment':
+    def bind_variable(self, var: 'EVariable' , srt: Sort) -> 'TypingEnvironment':
         te = TypingEnvironment()
         te.e_env = self.e_env.copy()
         te.e_env[var] = srt
@@ -554,25 +554,26 @@ class Expression(object):
     def __eq__(self, other: object) -> bool:
         # Prevent use of the default eq implementation.
         raise NotImplementedError()
-    def eval(self, env: Dict['Variable', Value]) -> Value:
+    def eval(self, env: Dict['EVariable', Value]) -> Value:
         raise NotImplementedError()
     def typecheck(self, the_type: Sort, tenv: TypingEnvironment) -> bool:
         raise NotImplementedError()
 
-class Variable(Expression):
+class EVariable(Expression):
+    """Expression variable (base sets, section 3)"""
     def __init__(self, name: str):
         self.vname = name
     def __str__(self) -> str:
         return self.vname
     def __repr__(self) -> str:
-        return f'Variable({self.vname})'
+        return f'EVariable({self.vname})'
     def __eq__(self, other: object) -> bool:
-        if isinstance(other, Variable):
+        if isinstance(other, EVariable):
             return self.vname == other.vname
         return NotImplemented
     def __hash__(self) -> int:
-        return hash((Variable, self.vname))
-    def eval(self, env: Dict['Variable', Value]) -> Value:
+        return hash((EVariable, self.vname))
+    def eval(self, env: Dict['EVariable', Value]) -> Value:
         return env[self]
     def typecheck(self, the_type: Sort, tenv: TypingEnvironment) -> bool:
         return tenv.e_env[self] == the_type
@@ -584,7 +585,7 @@ class Succ(Expression):
         return repr(self)
     def __repr__(self) -> str:
         return f'Succ({repr(self.arg)})'
-    def eval(self, env: Dict[Variable, Value]) -> Value:
+    def eval(self, env: Dict[EVariable, Value]) -> Value:
         tmp = self.arg.eval(env)
         if isinstance(tmp, VNat):
             return tmp.succ()
@@ -607,7 +608,7 @@ class Nat(Expression):
         return str(self.num)
     def __repr__(self) -> str:
         return f'Nat({self.num})'
-    def eval(self, env: Dict[Variable, Value]) -> Value:
+    def eval(self, env: Dict[EVariable, Value]) -> Value:
         return VNat(self.num)
     def typecheck(self, the_type: Sort, tenv: TypingEnvironment) -> bool:
         """Typing checking for numerical literals from Table 4."""
@@ -620,7 +621,7 @@ class Int(Expression):
         return str(self.num)
     def __repr__(self) -> str:
         return f'Int({self.num})'
-    def eval(self, env: Dict[Variable, Value]) -> Value:
+    def eval(self, env: Dict[EVariable, Value]) -> Value:
         return VInt(self.num)
     def typecheck(self, the_type: Sort, tenv: TypingEnvironment) -> bool:
         """Typing checking for numerical literals from Table 4."""
@@ -633,7 +634,7 @@ class Bool(Expression):
         return str(self.value)
     def __repr__(self) -> str:
         return f'Bool({self.value})'
-    def eval(self, env: Dict[Variable, Value]) -> Value:
+    def eval(self, env: Dict[EVariable, Value]) -> Value:
         return VBool(self.value)
     def typecheck(self, the_type: Sort, tenv: TypingEnvironment) -> bool:
         return the_type == SBool()
@@ -646,7 +647,7 @@ class Choice(Expression):
         return f'{self.e1}⊕{self.e2})'
     def __repr__(self) -> str:
         return f'Either({self.e1}, {self.e2})'
-    def eval(self, env: Dict[Variable, Value]) -> Value:
+    def eval(self, env: Dict[EVariable, Value]) -> Value:
         # FIXME What to do here?
         raise NotImplementedError()
     def typecheck(self, the_type: Sort, tenv: TypingEnvironment) -> bool:
@@ -655,7 +656,7 @@ class Choice(Expression):
 
 class Process(object):
     def __init__(self) -> None:
-        self.environment: Dict[Variable, Any] = {}
+        self.environment: Dict[EVariable, Any] = {}
     def step(self, role: Participant, state: 'MState') -> Optional['MState']:
         raise NotImplementedError()
     def comm(self, role: Participant, label: Label, data: Any) -> 'Process':
@@ -752,7 +753,7 @@ class Send(Process):
 
 class ExtChoice(Process):
     """Synchronous receive from section 3, syntax of P."""
-    def __init__(self, source: Participant, alternatives: Dict[Label, Tuple[Variable, Process]]):
+    def __init__(self, source: Participant, alternatives: Dict[Label, Tuple[EVariable, Process]]):
         Process.__init__(self)
         """The alternatives must be a nonempty list of Recv processes."""
         self.source = source
@@ -800,7 +801,7 @@ class ExtChoice(Process):
 class TestExtChoiceTypcheck(unittest.TestCase):
     alice = Participant('Alice')
     l0, l1 = Label(0), Label(1)
-    x = Variable('x')
+    x = EVariable('x')
     def test_simple_call(self) -> None:
         proc = ExtChoice(self.alice, {self.l0: (self.x, Inaction())})
         ltype = LExternalChoice(self.alice, {self.l0: (SInt(), LEnd())})
@@ -823,7 +824,7 @@ class TestExamples(unittest.TestCase):
         Bob, Alice, Carol = \
                 Participant('Bob'), Participant('Alice'), Participant('Carol')
         l1, l2, l3, l4 = Label(1), Label(2), Label(3), Label(4)
-        x = Variable('x')
+        x = EVariable('x')
         PAlice = Send(Bob, l1, Nat(50), ExtChoice(Carol, {l3: (x, Inaction())}))
         PBob = ExtChoice(Alice,
                 {l1: (x, Send(Carol, l2, Nat(100), Inaction())),
