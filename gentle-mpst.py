@@ -751,6 +751,34 @@ class Send(Process):
         # Typecheck completed.
         return True
 
+class PVariable(Process):
+    def __init__(self, name: str) -> None:
+        self.name = name
+    def __str__(self) -> str:
+        return self.name
+    def __repr__(self) -> str:
+        return f'PVar({self.name})'
+    def comm(self, role: Participant, label: Label, data: Any) -> Process:
+        raise NotImplementedError() # TODO
+    def step(self, role: Participant, state: MState) -> None:
+        raise NotImplementedError() # TODO
+    def typecheck(self, the_type: LocalT, tenv: TypingEnvironment) -> bool:
+        raise NotImplementedError() # TODO
+
+class Rec(Process):
+    def __init__(self, var: PVariable, proc: Process) -> None:
+        self.var, self.proc = var, proc
+    def __str__(self) -> str:
+        return repr(self)
+    def __repr__(self) -> str:
+        return f'Rec({self.var}, {self.proc})'
+    def comm(self, role: Participant, label: Label, data: Any) -> Process:
+        raise NotImplementedError() # TODO
+    def step(self, role: Participant, state: MState) -> None:
+        raise NotImplementedError() # TODO
+    def typecheck(self, the_type: LocalT, tenv: TypingEnvironment) -> bool:
+        raise NotImplementedError() # TODO
+
 class ExtChoice(Process):
     """Synchronous receive from section 3, syntax of P."""
     def __init__(self, source: Participant, alternatives: Dict[Label, Tuple[EVariable, Process]]):
