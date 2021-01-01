@@ -475,24 +475,24 @@ class TypingEnvironment(object):
     From Section 4.3 "Type System". Used by typechecking and inference."""
     def __init__(self) -> None:
         # Expression environment
-        self.e_env: Dict[EVariable, Sort] = {}
+        self.e_env: Dict['EVariable', Sort] = {}
         # (Local) Process environment
-        self.p_env: Dict[LVariable, LocalT] = {}
+        self.p_env: Dict['PVariable', LocalT] = {}
         # FIXME Add multiparty session to global type
     def lookup_variable(self, var: 'EVariable') -> Sort:
         return self.e_env[var]
-    def lookup_lvariable(self, lvar: LVariable) -> LocalT:
-        return self.p_env[lvar]
+    def lookup_pvariable(self, pvar: 'PVariable') -> LocalT:
+        return self.p_env[pvar]
     def bind_variable(self, var: 'EVariable' , srt: Sort) -> 'TypingEnvironment':
         te = TypingEnvironment()
         te.e_env = self.e_env.copy()
         te.e_env[var] = srt
         te.p_env = self.p_env
         return te
-    def bind_lvariable(self, lvar: LVariable, ltype: LocalT) -> 'TypingEnvironment':
+    def bind_pvariable(self, pvar: 'PVariable', ltype: LocalT) -> 'TypingEnvironment':
         te = TypingEnvironment()
         te.p_env = self.p_env.copy()
-        te.p_env[lvar] = ltype
+        te.p_env[pvar] = ltype
         te.e_env = self.e_env
         return te
     def __str__(self) -> str:
@@ -657,7 +657,7 @@ class Choice(Expression):
 class Process(object):
     def __init__(self) -> None:
         self.expr_environment: Dict[EVariable, Any] = {}
-        self.proc_environment: Dict[PVariable, 'Process'] = {}
+        self.proc_environment: Dict['PVariable', 'Process'] = {}
     def step(self, role: Participant, state: 'MState') -> Optional['MState']:
         raise NotImplementedError()
     def comm(self, role: Participant, label: Label, data: Any) -> 'Process':
@@ -762,9 +762,20 @@ class PVariable(Process):
     def comm(self, role: Participant, label: Label, data: Any) -> Process:
         raise NotImplementedError() # TODO
     def step(self, role: Participant, state: MState) -> None:
+        # TODO Replace self with process from proc_environment?
         raise NotImplementedError() # TODO
     def typecheck(self, the_type: LocalT, tenv: TypingEnvironment) -> bool:
-        raise NotImplementedError() # TODO
+        # We expect recursive variables to occur in the same places. this is technically
+        # not strictly speakin necessary.
+        if not isinstance(the_type, LVariable):
+            return False
+        # Variable names must match.
+        if self.name != the_type.ltvname:
+            return False
+        # The variable must be bound (to a recursive type)
+        if not isinstance(tenv.lookup_pvariable(self), LRec):
+            return False
+        return True
 
 class Rec(Process):
     def __init__(self, var: PVariable, proc: Process) -> None:
@@ -778,7 +789,26 @@ class Rec(Process):
     def step(self, role: Participant, state: MState) -> None:
         raise NotImplementedError() # TODO
     def typecheck(self, the_type: LocalT, tenv: TypingEnvironment) -> bool:
-        raise NotImplementedError() # TODO
+        if not isinstance(the_type, LRec):
+            return False
+        tenv1 = tenv.bind_pvariable(self.var, the_type)
+        return self.proc.typecheck(the_type.local_type, tenv1)
+
+class TestRec(unittest.TestCase):
+    Xp = PVariable('X')
+    Xl = LVariable('X')
+    y = EVariable('y')
+    p = Participant('p')
+    l = Label(0)
+    def test_1(self) -> None:
+        proc = Rec(self.Xp, ExtChoice(self.p, {self.l: (self.y, self.Xp)}))
+        ltype = LRec(self.Xl, LExternalChoice(self.p, {self.l: (SInt(), self.Xl)}))
+        self.assertTrue(proc.typecheck(ltype, TypingEnvironment()))
+    def test_2(self) -> None:
+        # FIXME This is not a valid process, should it really typecheck?
+        proc = Rec(self.Xp, self.Xp)
+        ltype = LRec(self.Xl, self.Xl)
+        self.assertTrue(proc.typecheck(ltype, TypingEnvironment()))
 
 class ExtChoice(Process):
     """Synchronous receive from section 3, syntax of P."""
@@ -972,4 +1002,3 @@ class TestExamples(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
-
